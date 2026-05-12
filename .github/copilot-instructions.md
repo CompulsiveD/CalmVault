@@ -63,9 +63,25 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
 - **API client**: All backend calls go through `src/services/api.ts`. Do not use `fetch` directly in components.
 - **Type sharing**: `src/types/file.ts` mirrors the backend's `FileMetadata` interface.
+- **Component style**: All components use `<script setup lang="ts">` with Composition API. Props use `defineProps<{}>()`, emits use `defineEmits<{}>()`.
+- **State management**: App-level state lives in `App.vue` using `ref()` and `computed()` — no Pinia/Vuex. State is passed down via props; mutations flow up via emits.
+- **Component responsibilities**:
+  - `App.vue` — owns all state (`files`, `allTags`, `selectedTag`), handles API calls for CRUD, passes data down to children
+  - `AppHeader.vue` — branding + upload button, emits `upload` and `toggle-sidebar`
+  - `TagSidebar.vue` — tag filter list, emits `select` with tag name or `null` for "All Files"
+  - `FileGallery.vue` — grid/list view toggle, renders `FileCard` instances
+  - `FileCard.vue` — display-only, emits `click` (preview) and `delete`
+  - `FileUpload.vue` — drag & drop + file picker, calls `api.uploadFiles()` directly, emits `upload-complete`
+  - `FilePreview.vue` — modal overlay, uses `TagEditor` for inline tag editing, emits `close`, `delete`, `tags-updated`
+  - `TagEditor.vue` — reusable tag chip input, uses `update:tags` emit pattern (v-model compatible)
+- **CSS**: Scoped styles per component. Global design tokens in `style.css` using CSS custom properties (`--color-*`, `--space-*`, `--text-*`). No CSS framework.
+- **File icons**: MIME-type-to-emoji mapping in `FileCard.vue` (`fileIcon()` function). Image thumbnails use `api.getDownloadUrl(id)`.
+- **Delete confirmation**: Uses `window.confirm()` in `App.vue` before calling the API.
+- **Tags**: Always lowercased and trimmed before saving. Backspace in an empty tag input removes the last tag.
 
 ### Design philosophy
 
-- Minimal, calm, iCloud-inspired UI — lots of whitespace, soft colors
+- Minimal, calm, iCloud-inspired UI — lots of whitespace, soft colors (accent: `#5ba4cf`)
 - Tag-based organization only (no folder hierarchy)
-- Upload limit: 50 MB per file (enforced by multer in `src/middleware/upload.ts`)
+- Upload limit: 50 MB per file (enforced by multer in `backend/src/middleware/upload.ts`)
+- Responsive: sidebar collapses to a slide-in menu on mobile (≤768px)
