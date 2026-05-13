@@ -1,11 +1,12 @@
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY step-1/backend/package*.json ./
+RUN npm install -g typescript
 RUN npm ci
 COPY step-1/backend/ ./
 RUN npm run build
 
-FROM node:20-alpine
+FROM node:26-alpine
 WORKDIR /app
 
 # Create non-root user (Container Apps best practice)

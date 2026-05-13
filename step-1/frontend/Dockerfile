@@ -1,6 +1,7 @@
-FROM node:20-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 COPY step-1/frontend/package*.json ./
+RUN npm install -g typescript vite vue-tsc
 RUN npm ci
 COPY step-1/frontend/ ./
 RUN npm run build
