@@ -14,8 +14,7 @@ This step adds an Azure Container Registry (ACR) and builds two container images
 ## What's New
 
 - **Bicep**: ACR resource added to `infrastructure/resources.bicep`
-- **Dockerfile.backend**: Compiles TypeScript and runs the Express API
-- **Dockerfile.frontend**: Builds the Vite app and serves via nginx
+- **Dockerfiles**: Located in `step-1/backend/Dockerfile` and `step-1/frontend/Dockerfile` (defined alongside source code)
 - **nginx.conf**: Serves the SPA with API proxy pass-through
 - **Build**: Uses `az acr build` to build remotely on Azure
 
@@ -57,14 +56,14 @@ ACR_NAME=calmvaultacr${SUFFIX}
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-backend:latest \
-  --file step-2/Dockerfile.backend \
+  --file step-1/backend/Dockerfile \
   .
 
 # Build frontend image (takes ~1-3 minutes)
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-2/Dockerfile.frontend \
+  --file step-1/frontend/Dockerfile \
   .
 ```
 
@@ -78,14 +77,14 @@ $ACR_NAME = "calmvaultacr$SUFFIX"
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-backend:latest `
-  --file step-2/Dockerfile.backend `
+  --file step-1/backend/Dockerfile `
   .
 
 # Build frontend image (takes ~1-3 minutes)
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-2/Dockerfile.frontend `
+  --file step-1/frontend/Dockerfile `
   .
 ```
 

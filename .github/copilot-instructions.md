@@ -7,12 +7,12 @@ CalmVault is organized as a **step-by-step deployment lab**. Each `step-N/` fold
 ```
 step-1/          ← Deploy infrastructure + run locally
   backend/       ← Express + TypeScript REST API
+    Dockerfile   ← Backend API container (node:20-alpine)
   frontend/      ← Vue 3 + TypeScript SPA (Vite)
+    Dockerfile   ← Frontend SPA container (nginx:alpine → port 8080)
   infrastructure/← Bicep templates for Azure
 step-2/          ← Add ACR + build container images (no local Docker)
   infrastructure/← Bicep with ACR added
-  Dockerfile.backend  ← Backend API container (node:20-alpine)
-  Dockerfile.frontend ← Frontend SPA container (nginx:alpine)
   nginx.conf     ← nginx config for SPA routing + API proxy
 step-3/          ← Deploy to Azure Container Apps
   infrastructure/← Bicep with Container Apps Environment + apps
@@ -129,7 +129,7 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 - **Target audience**: 100–200 level developers. Assume familiarity with basic CLI usage and web development concepts, but do NOT assume knowledge of Azure services, Bicep, Docker, or infrastructure-as-code. Explain "why" alongside "what" for Azure-specific concepts.
 - Each step folder (`step-N/`) is an **incremental addition** — it contains only new or modified files for that stage. Earlier steps remain unchanged.
 - The root `DEPLOYMENT_GUIDE.md` provides the lab walkthrough. Keep it in sync when adding new steps.
-- Dockerfiles reference source from previous steps (e.g., `step-1/frontend/`) since the build context is the repo root.
+- Dockerfiles live alongside their source code (`step-1/backend/Dockerfile`, `step-1/frontend/Dockerfile`) but the build context is the repo root.
 - **Dual-platform commands**: All CLI command blocks in READMEs and the deployment guide must include both Bash and PowerShell equivalents. Use **Bash:** / **PowerShell:** labels before each block. For commands identical in both shells, use a single block labeled **Bash / PowerShell:**.
 - **Documentation tone**: Brief explanatory notes after commands (what just happened, what to expect). Include expected output where helpful. Add "> **Tip:**" callouts for common pitfalls.
 - Minimal, calm design language applies to documentation as well — clear headings, short paragraphs, no clutter.

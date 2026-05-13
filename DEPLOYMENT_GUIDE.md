@@ -275,14 +275,14 @@ ACR_NAME=calmvaultacr${SUFFIX}
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-backend:latest \
-  --file step-2/Dockerfile.backend \
+  --file step-1/backend/Dockerfile \
   .
 
 # Build frontend container
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-2/Dockerfile.frontend \
+  --file step-1/frontend/Dockerfile \
   .
 ```
 
@@ -296,14 +296,14 @@ $ACR_NAME = "calmvaultacr$SUFFIX"
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-backend:latest `
-  --file step-2/Dockerfile.backend `
+  --file step-1/backend/Dockerfile `
   .
 
 # Build frontend container
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-2/Dockerfile.frontend `
+  --file step-1/frontend/Dockerfile `
   .
 ```
 
@@ -376,7 +376,7 @@ BACKEND_URL=<backendUrl from output>
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-2/Dockerfile.frontend \
+  --file step-1/frontend/Dockerfile \
   --build-arg VITE_API_BASE_URL=$BACKEND_URL \
   .
 ```
@@ -391,7 +391,7 @@ $BACKEND_URL = "<backendUrl from output>"
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-2/Dockerfile.frontend `
+  --file step-1/frontend/Dockerfile `
   --build-arg "VITE_API_BASE_URL=$BACKEND_URL" `
   .
 ```
