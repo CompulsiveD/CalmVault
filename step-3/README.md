@@ -15,7 +15,7 @@ This step deploys the backend and frontend containers from ACR to Azure Containe
 
 - **Bicep**: Log Analytics workspace, Container Apps Environment, and two Container Apps (backend + frontend)
 - **Backend container** receives Azure connection secrets via Container Apps secrets/env vars
-- **Frontend container** serves the SPA via nginx on port 80
+- **Frontend container** serves the SPA via nginx on port 8080
 - Both apps scale from 0 to 3 replicas based on HTTP traffic
 
 ## Deploy
@@ -133,7 +133,7 @@ Write-Output $FRONTEND_URL
 │  ┌─────────────────┐     ┌──────────────────────┐  │
 │  │  calmvault-     │     │  calmvault-          │  │
 │  │  frontend       │────▶│  backend             │  │
-│  │  (nginx :80)    │     │  (express :3001)     │  │
+│  │  (nginx :8080)  │     │  (express :3001)     │  │
 │  └─────────────────┘     └──────────────────────┘  │
 │                                  │                  │
 └──────────────────────────────────│──────────────────┘

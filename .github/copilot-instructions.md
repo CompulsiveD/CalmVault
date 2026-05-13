@@ -15,7 +15,7 @@ step-2/          ← Add ACR + build container images (no local Docker)
   infrastructure/← Bicep with ACR added
   nginx.conf     ← nginx config for SPA routing + API proxy
 step-3/          ← Deploy to Azure Container Apps
-  infrastructure/← Bicep with Container Apps Environment + apps
+  infrastructure/← Split Bicep: backend.main.bicep + frontend.main.bicep
 ```
 
 The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
@@ -25,6 +25,7 @@ The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
 - **`step-1/backend/`** — Express + TypeScript REST API (Node.js). Handles file uploads, metadata CRUD, and proxies Azure services. Runs on port 3001.
 - **`step-1/frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
 - **`step-1/infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
+- **`step-3/infrastructure/`** — Split into `backend.main.bicep` (deploys Log Analytics, Container Apps Environment, backend app) and `frontend.main.bicep` (deploys frontend app). Backend is deployed first so its URL can be passed to the frontend image build.
 
 Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB** (serverless). There is no authentication (MVP).
 
@@ -86,7 +87,7 @@ Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource
 | Log Analytics | `Microsoft.OperationalInsights/workspaces` | `calmvault-logs-<suffix>` | 30-day retention (added in step-3) |
 | Container Apps Env | `Microsoft.App/managedEnvironments` | `calmvault-env-<suffix>` | Linked to Log Analytics (added in step-3) |
 | Backend Container App | `Microsoft.App/containerApps` | `calmvault-backend-<suffix>` | Port 3001, external ingress, 0–3 replicas (added in step-3) |
-| Frontend Container App | `Microsoft.App/containerApps` | `calmvault-frontend-<suffix>` | Port 80, external ingress, 0–3 replicas (added in step-3) |
+| Frontend Container App | `Microsoft.App/containerApps` | `calmvault-frontend-<suffix>` | Port 8080, external ingress, 0–3 replicas (added in step-3) |
 
 ### Environment
 
