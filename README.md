@@ -2,39 +2,47 @@
 
 A minimal, private web app for everyday users to store and organize personal files and images — without the clutter of traditional cloud storage.
 
+## About This Lab
+
+This repository is a **hands-on deployment lab** designed for developers at the **100–200 level**. You should be comfortable with basic command-line usage and web development concepts, but no prior Azure or cloud experience is required.
+
+By the end of this lab, you'll have deployed a full-stack web application to the cloud using Azure's managed services.
+
 ## Lab Structure
 
-This repository is organized as a step-by-step lab:
+Each step builds incrementally on the previous one:
 
-| Folder | Contents |
-| --- | --- |
-| `step-1/` | Infrastructure + backend + frontend — deploy Azure resources and run locally |
-| `step-2/` | Azure Container Registry + Dockerfiles — build backend & frontend images in the cloud (no local Docker) |
-| `step-3/` | Azure Container Apps — deploy both containers with auto-scaling and managed secrets |
+| Step | What you'll do | What you'll learn |
+| --- | --- | --- |
+| `step-1/` | Deploy Azure resources and run the app locally | Bicep (infrastructure-as-code), Azure Storage, Cosmos DB |
+| `step-2/` | Build container images in the cloud | Docker concepts, Azure Container Registry, `az acr build` |
+| `step-3/` | Deploy containers to Azure Container Apps | Managed container hosting, auto-scaling, secrets management |
 
-See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) for the full walkthrough.
+👉 **Start here:** [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) — the full step-by-step walkthrough.
 
 ## Architecture
 
-- **Frontend:** Vue 3 + TypeScript (Vite)
-- **Backend:** Node.js + Express + TypeScript
-- **File Storage:** Azure Blob Storage
-- **Metadata DB:** Azure Cosmos DB (serverless)
+- **Frontend:** Vue 3 + TypeScript (Vite) — a single-page app for uploading and browsing files
+- **Backend:** Node.js + Express + TypeScript — REST API that handles uploads and talks to Azure
+- **File Storage:** Azure Blob Storage — stores the actual uploaded files
+- **Metadata DB:** Azure Cosmos DB (serverless) — stores file metadata (name, tags, dates)
 
 ## Quick Start
 
 ```bash
-# Deploy infrastructure
+# Deploy infrastructure (creates Azure resources)
 az deployment sub create --location centralus --template-file step-1/infrastructure/main.bicep
 
-# Backend
-cd step-1/backend && cp .env.example .env  # fill in credentials
+# Backend (in one terminal)
+cd step-1/backend && cp .env.example .env  # fill in credentials from Azure
 npm install && npm run dev
 
-# Frontend (new terminal)
+# Frontend (in another terminal)
 cd step-1/frontend
 npm install && npm run dev
 ```
+
+> **Note:** The Quick Start skips explanations. For the full guided experience, use [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 
 ## API Endpoints
 

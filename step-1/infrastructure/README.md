@@ -2,13 +2,23 @@
 
 Bicep templates to deploy CalmVault's Azure resources.
 
+## What is Bicep?
+
+[Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview) is Azure's infrastructure-as-code language. Instead of manually clicking through the Azure portal to create resources, you define them in a `.bicep` file and deploy with a single command. This makes deployments repeatable and version-controlled.
+
 ## Resources Deployed
 
-- **Resource Group**: `rg-calmvault-<suffix>`
-- **Storage Account**: `calmvault<suffix>` (Standard LRS, blob container `calmvault-files`)
-- **Cosmos DB**: `calmvault-cosmos-<suffix>` (Serverless, database `calmvault`, container `files`)
+| Resource | Name Pattern | What it does |
+| --- | --- | --- |
+| **Resource Group** | `rg-calmvault-<suffix>` | A logical container that holds all your Azure resources together |
+| **Storage Account** | `calmvault<suffix>` | Stores your uploaded files as blobs (binary large objects) |
+| **Cosmos DB** | `calmvault-cosmos-<suffix>` | A NoSQL database that stores file metadata (name, tags, upload date) |
+
+> **What's a suffix?** It's a 4-character code (e.g., `a1b2`) automatically generated from your subscription ID. This ensures resource names are globally unique without you having to think of names.
 
 ## Deploy
+
+From the repository root:
 
 **Bash:**
 
@@ -26,9 +36,11 @@ az deployment sub create `
   --template-file step-1/infrastructure/main.bicep
 ```
 
-The deployment outputs a `suffix` value (4-character hash). Save it — all resource names use this suffix and it's required for subsequent steps.
+> **Tip:** This takes 2–5 minutes. When it finishes, you'll see a JSON output with the deployment results.
 
-To specify a custom suffix or region:
+The deployment outputs a `suffix` value. Save it — all resource names use this suffix and it's required for subsequent steps.
+
+To specify a custom suffix or region (optional — most people should skip this):
 
 **Bash:**
 

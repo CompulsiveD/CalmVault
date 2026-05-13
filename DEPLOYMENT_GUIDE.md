@@ -1,24 +1,45 @@
 # CalmVault — Deployment Guide
 
-A step-by-step guide to deploying CalmVault from scratch.
+A step-by-step guide to deploying CalmVault from scratch. This lab is designed for developers at the **100–200 level** — you should be comfortable with basic command-line usage and web development, but no prior Azure experience is required.
 
 ---
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 20+
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) installed and authenticated (`az login`)
-- An active Azure subscription
+- [Node.js](https://nodejs.org/) 20+ — the JavaScript runtime for our backend and frontend build tools
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) — a command-line tool for managing Azure resources
+- An active Azure subscription — [create a free account](https://azure.microsoft.com/free/) if you don't have one
+
+**Before starting**, make sure you're logged into Azure:
+
+**Bash / PowerShell:**
+
+```bash
+az login
+```
+
+This opens a browser window for authentication. Once logged in, verify your subscription:
+
+```bash
+az account show --query name -o tsv
+```
 
 ---
 
 ## Step 1 — Deploy Infrastructure & Run Locally
 
-This step provisions the Azure resources (Blob Storage + Cosmos DB) and gets the application running on your local machine.
+In this step, you'll create cloud resources in Azure (a storage account for files and a database for metadata), then run the application on your local machine connected to those cloud resources.
+
+### What you'll create
+
+| Resource | Purpose |
+| --- | --- |
+| **Azure Blob Storage** | Stores the actual uploaded files (images, documents, etc.) |
+| **Azure Cosmos DB** | Stores metadata about each file (name, tags, upload date) |
 
 ### 1.1 Deploy Azure Resources
 
-From the repository root:
+This command tells Azure to create all the resources defined in our Bicep template. [Bicep](https://learn.microsoft.com/en-us/azure/azure-resource-manager/bicep/overview) is Azure's infrastructure-as-code language — think of it as a blueprint for cloud resources.
 
 **Bash:**
 
@@ -36,14 +57,15 @@ az deployment sub create `
   --template-file step-1/infrastructure/main.bicep
 ```
 
+> **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. If you get an error about the location, make sure you typed `centralus` (no space).
+
 ### 1.2 Save Deployment Outputs
 
-After the deployment completes, save the key outputs — you'll need them for configuration and all subsequent steps.
+The deployment created resources with auto-generated names. Let's save those names — you'll need them for configuration and all subsequent steps.
 
 **Bash:**
 
 ```bash
-# Save all outputs at once
 SUFFIX=$(az deployment sub show --name main --query properties.outputs.suffix.value -o tsv)
 COSMOS_ENDPOINT=$(az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv)
 STORAGE_ACCOUNT=$(az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv)
@@ -56,7 +78,6 @@ echo "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 **PowerShell:**
 
 ```powershell
-# Save all outputs at once
 $SUFFIX = az deployment sub show --name main --query properties.outputs.suffix.value -o tsv
 $COSMOS_ENDPOINT = az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv
 $STORAGE_ACCOUNT = az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv
@@ -66,22 +87,22 @@ Write-Output "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
 Write-Output "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 ```
 
-Keep these values handy — `SUFFIX` is used in every subsequent step, and the others are needed for backend configuration.
+> **Tip:** Write down the `SUFFIX` value (e.g., `a1b2`). It's a 4-character code unique to your subscription and used in all resource names throughout this lab. If you close your terminal, you can always re-run these commands to get the values again.
 
 ### 1.3 Retrieve Secrets
 
-The Bicep outputs intentionally exclude secrets. Retrieve them using the variables saved in step 1.2:
+Some sensitive values (connection strings, keys) are intentionally excluded from Bicep outputs for security. We'll retrieve them separately using the variables saved in step 1.2.
 
 **Bash:**
 
 ```bash
-# Storage account connection string
+# Connection string — this is like a URL + password for the storage account
 STORAGE_CONN=$(az storage account show-connection-string \
   --name $STORAGE_ACCOUNT \
   --resource-group rg-calmvault-${SUFFIX} \
   --query connectionString -o tsv)
 
-# Cosmos DB primary key
+# Primary key — the password for Cosmos DB
 COSMOS_KEY=$(az cosmosdb keys list \
   --name calmvault-cosmos-${SUFFIX} \
   --resource-group rg-calmvault-${SUFFIX} \
@@ -91,13 +112,13 @@ COSMOS_KEY=$(az cosmosdb keys list \
 **PowerShell:**
 
 ```powershell
-# Storage account connection string
+# Connection string — this is like a URL + password for the storage account
 $STORAGE_CONN = az storage account show-connection-string `
   --name $STORAGE_ACCOUNT `
   --resource-group "rg-calmvault-$SUFFIX" `
   --query connectionString -o tsv
 
-# Cosmos DB primary key
+# Primary key — the password for Cosmos DB
 $COSMOS_KEY = az cosmosdb keys list `
   --name "calmvault-cosmos-$SUFFIX" `
   --resource-group "rg-calmvault-$SUFFIX" `
@@ -105,6 +126,8 @@ $COSMOS_KEY = az cosmosdb keys list `
 ```
 
 ### 1.4 Configure the Backend
+
+The backend needs to know how to connect to Azure. We store these settings in a `.env` file (which is git-ignored so secrets don't end up in source control).
 
 **Bash:**
 
@@ -131,6 +154,8 @@ COSMOS_KEY=<COSMOS_KEY from 1.3>
 COSMOS_DATABASE_NAME=calmvault
 ```
 
+> **Tip:** If you're using the same terminal session, you can echo the values directly: `echo $STORAGE_CONN` (Bash) or `Write-Output $STORAGE_CONN` (PowerShell).
+
 ### 1.5 Start the Backend
 
 **Bash / PowerShell:**
@@ -140,6 +165,8 @@ cd step-1/backend
 npm install
 npm run dev
 ```
+
+`npm install` downloads all the dependencies. `npm run dev` starts the server with auto-reload (it will restart automatically when you edit code).
 
 Verify it's running:
 
@@ -154,12 +181,14 @@ curl http://localhost:3001/api/health
 
 ```powershell
 Invoke-RestMethod http://localhost:3001/api/health
-# Expected: {"status":"ok"}
+# Expected: @{status=ok}
 ```
+
+> **Tip:** If you get "connection refused", make sure the backend started without errors. Check the terminal where you ran `npm run dev` for error messages — usually a missing `.env` value.
 
 ### 1.6 Start the Frontend
 
-In a new terminal:
+In a **new terminal window** (keep the backend running):
 
 **Bash / PowerShell:**
 
@@ -171,21 +200,37 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser. You should see the CalmVault interface with a drag & drop upload zone.
 
+> **Tip:** The frontend talks to the backend at `http://localhost:3001`. Both must be running simultaneously.
+
 ### 1.7 Verify End-to-End
 
-1. Drag a file onto the upload zone
+1. Drag a file onto the upload zone (or click to browse)
 2. Add a tag (e.g., "test") and upload
 3. Confirm the file appears in the gallery
 4. Click the file to preview it
 5. Delete the file and confirm it's removed
 
+If everything works, congratulations! Your app is running locally and storing files in Azure. 🎉
+
 ---
 
 ## Step 2 — Build Container Images with ACR
 
-This step adds an Azure Container Registry and builds the app containers in the cloud — no local Docker required.
+Now that the app works locally, let's package it into **containers** — portable, self-contained units that can run anywhere. We'll use **Azure Container Registry (ACR)** to build the containers in the cloud, so you don't need Docker installed on your machine.
+
+### What you'll create
+
+| Resource | Purpose |
+| --- | --- |
+| **Azure Container Registry** | A private registry (like a warehouse) that stores your container images |
+
+### What's a container?
+
+Think of a container as a zip file that includes your app code plus everything it needs to run (Node.js, dependencies, config). Unlike running locally with `npm run dev`, a container works the same way in any environment.
 
 ### 2.1 Deploy Infrastructure (with ACR)
+
+This deploys the same resources as Step 1, plus a Container Registry:
 
 **Bash:**
 
@@ -203,9 +248,9 @@ az deployment sub create `
   --template-file step-2/infrastructure/main.bicep
 ```
 
-Note the `acrName` and `acrLoginServer` from the outputs.
-
 ### 2.2 Build the Container Images Remotely
+
+The `az acr build` command sends your source code to Azure, which builds the container image in the cloud. No Docker needed on your machine!
 
 **Bash:**
 
@@ -213,14 +258,14 @@ Note the `acrName` and `acrLoginServer` from the outputs.
 # Use the SUFFIX saved from step 1.2
 ACR_NAME=calmvaultacr${SUFFIX}
 
-# Build backend
+# Build backend container
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-backend:latest \
   --file step-2/Dockerfile.backend \
   .
 
-# Build frontend
+# Build frontend container
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
@@ -234,14 +279,14 @@ az acr build \
 # Use the $SUFFIX saved from step 1.2
 $ACR_NAME = "calmvaultacr$SUFFIX"
 
-# Build backend
+# Build backend container
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-backend:latest `
   --file step-2/Dockerfile.backend `
   .
 
-# Build frontend
+# Build frontend container
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
@@ -249,9 +294,11 @@ az acr build `
   .
 ```
 
-The build context is the repository root because the Dockerfiles reference `step-1/` source paths. ACR performs the build in the cloud.
+> **Tip:** Each build takes 1–3 minutes. The `.` at the end means "use the current directory as the build context" — this is why you must run this from the repository root.
 
 ### 2.3 Verify
+
+Confirm both images were created:
 
 **Bash / PowerShell:**
 
@@ -267,7 +314,16 @@ az acr repository show-tags --name $ACR_NAME --repository calmvault-backend --ou
 
 ## Step 3 — Deploy to Azure Container Apps
 
-This step deploys both containers to Azure Container Apps with auto-scaling and managed secrets.
+Now let's run those containers in the cloud! **Azure Container Apps** is a managed service that runs your containers, handles scaling (more traffic = more instances), and gives you a public URL — without managing servers.
+
+### What you'll create
+
+| Resource | Purpose |
+| --- | --- |
+| **Log Analytics Workspace** | Collects logs from your containers (for debugging) |
+| **Container Apps Environment** | A shared network for your containers to communicate |
+| **Backend Container App** | Runs the Express API (auto-scales 0–3 instances) |
+| **Frontend Container App** | Runs the nginx SPA server (auto-scales 0–3 instances) |
 
 ### 3.1 Deploy Infrastructure (with Container Apps)
 
@@ -289,11 +345,13 @@ az deployment sub create `
   --template-file step-3/infrastructure/main.bicep
 ```
 
-Note the `backendUrl` and `frontendUrl` from the outputs.
+> **Tip:** This step takes 3–5 minutes because it creates several resources. The template automatically wires up the secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
+
+Note the `backendUrl` and `frontendUrl` from the outputs — these are your live URLs!
 
 ### 3.2 Update Frontend API Proxy
 
-The frontend nginx proxies `/api/` to the backend. Rebuild with the actual backend URL:
+The frontend needs to know where the backend lives. Rebuild the frontend container with the backend URL baked in:
 
 **Bash:**
 
@@ -333,23 +391,21 @@ az acr build `
 # Backend health check
 curl <backendUrl>/api/health
 # Expected: {"status":"ok"}
-
-# Open frontend
-echo <frontendUrl>
 ```
 
 **PowerShell:**
 
 ```powershell
 # Backend health check
-Invoke-RestMethod <backendUrl>/api/health
-# Expected: {"status":"ok"}
-
-# Open frontend
-Write-Output <frontendUrl>
+Invoke-RestMethod "<backendUrl>/api/health"
+# Expected: @{status=ok}
 ```
 
 Open the frontend URL in your browser. Upload a file and confirm it round-trips through the backend to Blob Storage.
+
+> **Tip:** The first request may take 10–20 seconds because Container Apps scales from zero. Subsequent requests will be fast.
+
+Congratulations — CalmVault is now running in the cloud! 🚀
 
 ---
 

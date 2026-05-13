@@ -1,6 +1,15 @@
 # Step 3 — Deploy to Azure Container Apps
 
-This step deploys the backend and frontend containers from ACR to Azure Container Apps.
+This step deploys the backend and frontend containers from ACR to Azure Container Apps — a managed service that runs your containers in the cloud with automatic scaling and a public URL.
+
+## Key Concepts
+
+| Term | What it means |
+| --- | --- |
+| **Azure Container Apps** | A service that runs your containers without you managing servers. It handles scaling, networking, and HTTPS automatically. |
+| **Container Apps Environment** | A shared network boundary for your containers. Apps in the same environment can talk to each other privately. |
+| **Log Analytics** | Azure's logging service — collects output from your containers so you can debug issues later. |
+| **Scaling (0–3 replicas)** | Your app scales to zero when idle (no cost) and up to 3 instances when busy. |
 
 ## What's New
 
@@ -31,15 +40,15 @@ az deployment sub create `
   --template-file step-3/infrastructure/main.bicep
 ```
 
-> **Prerequisite:** Container images must already exist in ACR (see Step 2). If you haven't built them yet, run Step 2 first.
+> **Prerequisite:** Container images must already exist in ACR (see Step 2). If you haven't built them yet, go back and complete Step 2 first.
 
-Note the `backendUrl` and `frontendUrl` from the outputs.
+> **Tip:** This step takes 3–5 minutes because it creates several resources and wires them together.
+
+Note the `backendUrl` and `frontendUrl` from the outputs — these are your live public URLs!
 
 ### 3.2 Update Frontend API URL
 
-The frontend nginx container proxies `/api/` requests to `localhost:3001` by default. In Container Apps, the backend runs at a separate FQDN. You have two options:
-
-**Option A** — Rebuild the frontend image with the backend URL baked in:
+The frontend nginx container needs to know where the backend lives. Rebuild the frontend image with the backend URL baked in:
 
 **Bash:**
 
@@ -71,10 +80,6 @@ az acr build `
   .
 ```
 
-**Option B** — Update the nginx config to reverse-proxy to the backend FQDN (recommended for this lab):
-
-Replace the `proxy_pass` line in `step-2/nginx.conf` with the backend Container App URL, rebuild, and redeploy.
-
 ### 3.3 Verify
 
 **Bash:**
@@ -93,11 +98,13 @@ echo https://<frontend-fqdn>
 ```powershell
 # Check backend health
 Invoke-RestMethod https://<backend-fqdn>/api/health
-# Expected: {"status":"ok"}
+# Expected: @{status=ok}
 
 # Open frontend in browser
 Write-Output https://<frontend-fqdn>
 ```
+
+> **Tip:** The first request may take 10–20 seconds because Container Apps scales from zero (no instances running until the first request arrives). Subsequent requests will be fast.
 
 ## Architecture
 

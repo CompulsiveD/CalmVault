@@ -126,10 +126,12 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
 ### Lab authoring
 
+- **Target audience**: 100–200 level developers. Assume familiarity with basic CLI usage and web development concepts, but do NOT assume knowledge of Azure services, Bicep, Docker, or infrastructure-as-code. Explain "why" alongside "what" for Azure-specific concepts.
 - Each step folder (`step-N/`) is an **incremental addition** — it contains only new or modified files for that stage. Earlier steps remain unchanged.
 - The root `DEPLOYMENT_GUIDE.md` provides the lab walkthrough. Keep it in sync when adding new steps.
 - Dockerfiles reference source from previous steps (e.g., `step-1/frontend/`) since the build context is the repo root.
 - **Dual-platform commands**: All CLI command blocks in READMEs and the deployment guide must include both Bash and PowerShell equivalents. Use **Bash:** / **PowerShell:** labels before each block. For commands identical in both shells, use a single block labeled **Bash / PowerShell:**.
+- **Documentation tone**: Brief explanatory notes after commands (what just happened, what to expect). Include expected output where helpful. Add "> **Tip:**" callouts for common pitfalls.
 - Minimal, calm design language applies to documentation as well — clear headings, short paragraphs, no clutter.
 
 ### Design philosophy
