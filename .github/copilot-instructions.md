@@ -2,12 +2,13 @@
 
 ## Architecture
 
-CalmVault is a monorepo with two independent apps:
+CalmVault is a monorepo with three top-level directories:
 
 - **`backend/`** — Express + TypeScript REST API (Node.js). Handles file uploads, metadata CRUD, and proxies Azure services. Runs on port 3001.
 - **`frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
+- **`infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
 
-Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB**. There is no authentication (MVP).
+Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB** (serverless). There is no authentication (MVP).
 
 ### Data flow
 
@@ -43,9 +44,30 @@ These must stay in sync manually. If you add a field to one, add it to the other
 | `npm run build`    | Type-check + production build      |
 | `npm run preview`  | Preview production build           |
 
+### Infrastructure (`cd infrastructure`)
+
+```bash
+az deployment sub create --location centralus --template-file infrastructure/main.bicep
+```
+
+All resource names follow the pattern `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts, which disallow hyphens). The suffix defaults to a 4-character hash derived from the subscription ID.
+
+### Infrastructure Components
+
+Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource group scope):
+
+| Resource | Type | Name Pattern | Notes |
+| --- | --- | --- | --- |
+| Resource Group | `Microsoft.Resources/resourceGroups` | `rg-calmvault-<suffix>` | Default region: `centralus`, tagged `SecurityControl: Ignore` |
+| Storage Account | `Microsoft.Storage/storageAccounts` | `calmvault<suffix>` | Standard LRS, TLS 1.2, no public blob access |
+| Blob Container | `storageAccounts/blobServices/containers` | `calmvault-files` | Created inside the storage account |
+| Cosmos DB Account | `Microsoft.DocumentDB/databaseAccounts` | `calmvault-cosmos-<suffix>` | Serverless mode, Session consistency, local auth enabled |
+| Cosmos DB Database | `databaseAccounts/sqlDatabases` | `calmvault` | SQL API |
+| Cosmos DB Container | `sqlDatabases/containers` | `files` | Partition key: `/id` |
+
 ### Environment
 
-Backend requires a `.env` file (copy from `.env.example`) with Azure Blob Storage and Cosmos DB credentials.
+Backend requires a `.env` file (copy from `.env.example`) with Azure Blob Storage and Cosmos DB credentials. After deploying infrastructure, populate `.env` from the Bicep outputs. Secrets (connection strings, keys) are not included in Bicep outputs — retrieve them via the Azure CLI after deployment.
 
 Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
