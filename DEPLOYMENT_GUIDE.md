@@ -133,14 +133,16 @@ $COSMOS_KEY = az cosmosdb keys list `
   --query primaryMasterKey -o tsv
 
 # Print the complete .env file — copy everything between the lines
-Write-Output "──────────── .env content (copy below) ────────────"
-Write-Output "PORT=3001"
-Write-Output "AZURE_STORAGE_CONNECTION_STRING=$STORAGE_CONN"
-Write-Output "AZURE_STORAGE_CONTAINER_NAME=calmvault-files"
-Write-Output "COSMOS_ENDPOINT=$COSMOS_ENDPOINT"
-Write-Output "COSMOS_KEY=$COSMOS_KEY"
-Write-Output "COSMOS_DATABASE_NAME=calmvault"
-Write-Output "──────────── end of .env content ────────────"
+Write-Output @"
+──────────── .env content (copy below) ────────────
+PORT=3001
+AZURE_STORAGE_CONNECTION_STRING=$STORAGE_CONN
+AZURE_STORAGE_CONTAINER_NAME=calmvault-files
+COSMOS_ENDPOINT=$COSMOS_ENDPOINT
+COSMOS_KEY=$COSMOS_KEY
+COSMOS_DATABASE_NAME=calmvault
+──────────── end of .env content ────────────
+"@
 ```
 
 > **What just happened?** You retrieved the storage connection string (like a URL + password for the storage account) and the Cosmos DB primary key (the database password). These are printed as a ready-to-use `.env` file.
