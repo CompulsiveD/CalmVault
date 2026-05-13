@@ -20,7 +20,9 @@ This step deploys the backend and frontend containers from ACR to Azure Containe
 
 ## Deploy
 
-### 3.1 Deploy Infrastructure (includes Container Apps)
+### 3.1 Deploy Backend Container App
+
+> **Prerequisite:** Container images must already exist in ACR (see Step 2). If you haven't built them yet, go back and complete Step 2 first.
 
 From the repository root:
 
@@ -29,7 +31,7 @@ From the repository root:
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/main.bicep
+  --template-file step-3/infrastructure/backend.main.bicep
 ```
 
 **PowerShell:**
@@ -37,25 +39,23 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/main.bicep
+  --template-file step-3/infrastructure/backend.main.bicep
 ```
 
-> **Prerequisite:** Container images must already exist in ACR (see Step 2). If you haven't built them yet, go back and complete Step 2 first.
+> **Tip:** This creates the Log Analytics workspace, Container Apps Environment, and backend Container App. Takes 3–5 minutes.
 
-> **Tip:** This step takes 3–5 minutes because it creates several resources and wires them together.
+Note the `backendUrl` from the outputs.
 
-Note the `backendUrl` and `frontendUrl` from the outputs — these are your live public URLs!
+### 3.2 Rebuild Frontend with Backend URL
 
-### 3.2 Update Frontend API URL
-
-The frontend nginx container needs to know where the backend lives. Rebuild the frontend image with the backend URL baked in:
+The frontend needs to know where the backend lives. Rebuild the frontend image with the backend URL baked in:
 
 **Bash:**
 
 ```bash
 # Use the SUFFIX saved from step 1
 ACR_NAME=calmvaultacr${SUFFIX}
-BACKEND_URL=<backendUrl from output>
+BACKEND_URL=$(az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv)
 
 az acr build \
   --registry $ACR_NAME \
@@ -70,7 +70,7 @@ az acr build \
 ```powershell
 # Use the $SUFFIX saved from step 1
 $ACR_NAME = "calmvaultacr$SUFFIX"
-$BACKEND_URL = "<backendUrl from output>"
+$BACKEND_URL = az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv
 
 az acr build `
   --registry $ACR_NAME `
@@ -80,28 +80,46 @@ az acr build `
   .
 ```
 
-### 3.3 Verify
+### 3.3 Deploy Frontend Container App
 
 **Bash:**
 
 ```bash
-# Check backend health
-curl https://<backend-fqdn>/api/health
-# Expected: {"status":"ok"}
-
-# Open frontend in browser
-echo https://<frontend-fqdn>
+az deployment sub create \
+  --location centralus \
+  --template-file step-3/infrastructure/frontend.main.bicep
 ```
 
 **PowerShell:**
 
 ```powershell
-# Check backend health
-Invoke-RestMethod https://<backend-fqdn>/api/health
+az deployment sub create `
+  --location centralus `
+  --template-file step-3/infrastructure/frontend.main.bicep
+```
+
+### 3.4 Verify
+
+**Bash:**
+
+```bash
+FRONTEND_URL=$(az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv)
+
+curl $BACKEND_URL/api/health
+# Expected: {"status":"ok"}
+
+echo $FRONTEND_URL
+```
+
+**PowerShell:**
+
+```powershell
+$FRONTEND_URL = az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv
+
+Invoke-RestMethod "$BACKEND_URL/api/health"
 # Expected: @{status=ok}
 
-# Open frontend in browser
-Write-Output https://<frontend-fqdn>
+Write-Output $FRONTEND_URL
 ```
 
 > **Tip:** The first request may take 10–20 seconds because Container Apps scales from zero (no instances running until the first request arrives). Subsequent requests will be fast.

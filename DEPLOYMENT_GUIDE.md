@@ -338,16 +338,18 @@ Now let's run those containers in the cloud! **Azure Container Apps** is a manag
 | **Backend Container App** | Runs the Express API (auto-scales 0–3 instances) |
 | **Frontend Container App** | Runs the nginx SPA server (auto-scales 0–3 instances) |
 
-### 3.1 Deploy Infrastructure (with Container Apps)
+### 3.1 Deploy Backend Container App
 
 > **Prerequisite:** Container images must exist in ACR. Complete Step 2 first.
+
+This deploys the Log Analytics workspace, Container Apps Environment, and the backend Container App:
 
 **Bash:**
 
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/main.bicep
+  --template-file step-3/infrastructure/backend.main.bicep
 ```
 
 **PowerShell:**
@@ -355,38 +357,30 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/main.bicep
+  --template-file step-3/infrastructure/backend.main.bicep
 ```
 
-> **Tip:** This step takes 3–5 minutes because it creates several resources. The template automatically wires up the secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
+> **Tip:** This step takes 3–5 minutes because it creates the Container Apps Environment and wires up secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
 
-### 3.2 Save Deployment Outputs
+### 3.2 Save Backend Deployment Outputs
 
-Save the backend and frontend URLs from the deployment — you'll need them for the remaining steps.
+Save the backend URL — you'll need it to configure the frontend.
 
 **Bash:**
 
 ```bash
-BACKEND_URL=$(az deployment sub show --name main --query properties.outputs.backendUrl.value -o tsv)
-FRONTEND_URL=$(az deployment sub show --name main --query properties.outputs.frontendUrl.value -o tsv)
+BACKEND_URL=$(az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv)
 
-echo "BACKEND_URL:  $BACKEND_URL"
-echo "FRONTEND_URL: $FRONTEND_URL"
+echo "BACKEND_URL: $BACKEND_URL"
 ```
 
 **PowerShell:**
 
 ```powershell
-$BACKEND_URL = az deployment sub show --name main --query properties.outputs.backendUrl.value -o tsv
-$FRONTEND_URL = az deployment sub show --name main --query properties.outputs.frontendUrl.value -o tsv
+$BACKEND_URL = az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv
 
-Write-Output @"
-BACKEND_URL:  $BACKEND_URL
-FRONTEND_URL: $FRONTEND_URL
-"@
+Write-Output "BACKEND_URL: $BACKEND_URL"
 ```
-
-> **Tip:** These are your live public URLs! The deployment name is `main` (the Bicep file name without the extension).
 
 ### 3.3 Update Frontend API Proxy
 
@@ -420,16 +414,16 @@ az acr build `
   .
 ```
 
-### 3.4 Re-deploy Container Apps
+### 3.4 Deploy Frontend Container App
 
-After rebuilding the frontend image with the correct backend URL, re-deploy the infrastructure to pick up the updated container image:
+Now deploy the frontend Container App with the updated image:
 
 **Bash:**
 
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/main.bicep
+  --template-file step-3/infrastructure/frontend.main.bicep
 ```
 
 **PowerShell:**
@@ -437,10 +431,26 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/main.bicep
+  --template-file step-3/infrastructure/frontend.main.bicep
 ```
 
-> **Tip:** This re-deploys the same template. Azure will detect the updated frontend image in ACR and restart the frontend Container App with the new version.
+Save the frontend URL:
+
+**Bash:**
+
+```bash
+FRONTEND_URL=$(az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv)
+
+echo "FRONTEND_URL: $FRONTEND_URL"
+```
+
+**PowerShell:**
+
+```powershell
+$FRONTEND_URL = az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv
+
+Write-Output "FRONTEND_URL: $FRONTEND_URL"
+```
 
 ### 3.5 Verify
 

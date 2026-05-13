@@ -9,16 +9,12 @@ param suffix string = substring(uniqueString(subscription().subscriptionId, 'cal
 var projectName = 'calmvault'
 var rgName = 'rg-${projectName}-${suffix}'
 
-resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-11-01' = {
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-11-01' existing = {
   name: rgName
-  location: location
-  tags: {
-    SecurityControl: 'Ignore'
-  }
 }
 
-module resources 'resources.bicep' = {
-  name: 'deploy-resources'
+module resources 'backend.resources.bicep' = {
+  name: 'deploy-backend'
   scope: resourceGroup
   params: {
     location: location
@@ -34,5 +30,4 @@ output cosmosEndpoint string = resources.outputs.cosmosEndpoint
 output acrName string = resources.outputs.acrName
 output acrLoginServer string = resources.outputs.acrLoginServer
 output backendUrl string = resources.outputs.backendUrl
-output frontendUrl string = resources.outputs.frontendUrl
 output suffix string = suffix

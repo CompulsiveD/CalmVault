@@ -13,95 +13,21 @@ var cosmosAccountName = '${projectName}-cosmos-${suffix}'
 var acrName = '${projectName}acr${suffix}'
 var containerName = 'calmvault-files'
 var cosmosDatabaseName = 'calmvault'
-var cosmosContainerName = 'files'
 var envName = '${projectName}-env-${suffix}'
 var backendAppName = '${projectName}-backend-${suffix}'
-var frontendAppName = '${projectName}-frontend-${suffix}'
 var logAnalyticsName = '${projectName}-logs-${suffix}'
 
-// ── Storage Account ────────────────────────────────────────
-resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' = {
+// ── Existing Resources (from previous steps) ───────────────
+resource storageAccount 'Microsoft.Storage/storageAccounts@2024-01-01' existing = {
   name: storageAccountName
-  location: location
-  sku: {
-    name: 'Standard_LRS'
-  }
-  kind: 'StorageV2'
-  properties: {
-    minimumTlsVersion: 'TLS1_2'
-    allowBlobPublicAccess: false
-    supportsHttpsTrafficOnly: true
-    allowSharedKeyAccess: true
-  }
 }
 
-resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2024-01-01' = {
-  parent: storageAccount
-  name: 'default'
-}
-
-resource blobContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2024-01-01' = {
-  parent: blobService
-  name: containerName
-}
-
-// ── Cosmos DB (Serverless) ─────────────────────────────────
-resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview' = {
+resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview' existing = {
   name: cosmosAccountName
-  location: location
-  kind: 'GlobalDocumentDB'
-  properties: {
-    databaseAccountOfferType: 'Standard'
-    disableLocalAuth: false
-    capabilities: [
-      { name: 'EnableServerless' }
-    ]
-    locations: [
-      {
-        locationName: location
-        failoverPriority: 0
-      }
-    ]
-    consistencyPolicy: {
-      defaultConsistencyLevel: 'Session'
-    }
-  }
 }
 
-resource cosmosDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-12-01-preview' = {
-  parent: cosmosAccount
-  name: cosmosDatabaseName
-  properties: {
-    resource: {
-      id: cosmosDatabaseName
-    }
-  }
-}
-
-resource cosmosDbContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-12-01-preview' = {
-  parent: cosmosDatabase
-  name: cosmosContainerName
-  properties: {
-    resource: {
-      id: cosmosContainerName
-      partitionKey: {
-        paths: ['/id']
-        kind: 'Hash'
-      }
-    }
-  }
-}
-
-// ── Azure Container Registry ───────────────────────────────
-resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
+resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
   name: acrName
-  location: location
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    adminUserEnabled: true
-  }
 }
 
 // ── Log Analytics (required by Container Apps) ─────────────
@@ -192,51 +118,6 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
-// ── Frontend Container App ─────────────────────────────────
-resource frontendApp 'Microsoft.App/containerApps@2024-03-01' = {
-  name: frontendAppName
-  location: location
-  properties: {
-    managedEnvironmentId: containerAppEnv.id
-    configuration: {
-      ingress: {
-        external: true
-        targetPort: 8080
-        transport: 'http'
-      }
-      registries: [
-        {
-          server: acr.properties.loginServer
-          username: acr.listCredentials().username
-          passwordSecretRef: 'acr-password'
-        }
-      ]
-      secrets: [
-        {
-          name: 'acr-password'
-          value: acr.listCredentials().passwords[0].value
-        }
-      ]
-    }
-    template: {
-      containers: [
-        {
-          name: 'frontend'
-          image: '${acr.properties.loginServer}/calmvault-frontend:latest'
-          resources: {
-            cpu: json('0.25')
-            memory: '0.5Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 0
-        maxReplicas: 3
-      }
-    }
-  }
-}
-
 // ── Outputs ────────────────────────────────────────────────
 output storageAccountName string = storageAccount.name
 output cosmosAccountName string = cosmosAccount.name
@@ -244,4 +125,3 @@ output cosmosEndpoint string = cosmosAccount.properties.documentEndpoint
 output acrName string = acr.name
 output acrLoginServer string = acr.properties.loginServer
 output backendUrl string = 'https://${backendApp.properties.configuration.ingress.fqdn}'
-output frontendUrl string = 'https://${frontendApp.properties.configuration.ingress.fqdn}'
