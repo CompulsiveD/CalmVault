@@ -26,6 +26,8 @@ az deployment sub create `
   --template-file step-1/infrastructure/main.bicep
 ```
 
+The deployment outputs a `suffix` value (4-character hash). Save it — all resource names use this suffix and it's required for subsequent steps.
+
 To specify a custom suffix or region:
 
 **Bash:**
@@ -48,12 +50,12 @@ az deployment sub create `
 
 ## After Deployment
 
-Copy the output values into `step-1/backend/.env`:
+Save the deployment outputs (see `DEPLOYMENT_GUIDE.md` step 1.2). Then retrieve secrets and populate `step-1/backend/.env`:
 
 ```
-AZURE_STORAGE_CONNECTION_STRING=<retrieve via Azure CLI>
+AZURE_STORAGE_CONNECTION_STRING=<from az storage account show-connection-string>
 COSMOS_ENDPOINT=<cosmosEndpoint output>
-COSMOS_KEY=<retrieve from Azure Portal or CLI>
+COSMOS_KEY=<from az cosmosdb keys list>
 ```
 
 To get the storage connection string:
@@ -61,13 +63,19 @@ To get the storage connection string:
 **Bash:**
 
 ```bash
-az storage account show-connection-string --name calmvault<suffix> --resource-group rg-calmvault-<suffix> --query connectionString -o tsv
+az storage account show-connection-string \
+  --name $STORAGE_ACCOUNT \
+  --resource-group rg-calmvault-${SUFFIX} \
+  --query connectionString -o tsv
 ```
 
 **PowerShell:**
 
 ```powershell
-az storage account show-connection-string --name "calmvault<suffix>" --resource-group "rg-calmvault-<suffix>" --query connectionString -o tsv
+az storage account show-connection-string `
+  --name $STORAGE_ACCOUNT `
+  --resource-group "rg-calmvault-$SUFFIX" `
+  --query connectionString -o tsv
 ```
 
 To get the Cosmos DB key:
@@ -75,11 +83,17 @@ To get the Cosmos DB key:
 **Bash:**
 
 ```bash
-az cosmosdb keys list --name calmvault-cosmos-<suffix> --resource-group rg-calmvault-<suffix> --query primaryMasterKey -o tsv
+az cosmosdb keys list \
+  --name calmvault-cosmos-${SUFFIX} \
+  --resource-group rg-calmvault-${SUFFIX} \
+  --query primaryMasterKey -o tsv
 ```
 
 **PowerShell:**
 
 ```powershell
-az cosmosdb keys list --name "calmvault-cosmos-<suffix>" --resource-group "rg-calmvault-<suffix>" --query primaryMasterKey -o tsv
+az cosmosdb keys list `
+  --name "calmvault-cosmos-$SUFFIX" `
+  --resource-group "rg-calmvault-$SUFFIX" `
+  --query primaryMasterKey -o tsv
 ```

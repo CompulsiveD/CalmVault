@@ -35,3 +35,4 @@ output acrName string = resources.outputs.acrName
 output acrLoginServer string = resources.outputs.acrLoginServer
 output backendUrl string = resources.outputs.backendUrl
 output frontendUrl string = resources.outputs.frontendUrl
+output suffix string = suffix

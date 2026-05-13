@@ -44,7 +44,7 @@ The frontend nginx container proxies `/api/` requests to `localhost:3001` by def
 **Bash:**
 
 ```bash
-SUFFIX=<suffix from output>
+# Use the SUFFIX saved from step 1
 ACR_NAME=calmvaultacr${SUFFIX}
 BACKEND_URL=<backendUrl from output>
 
@@ -59,7 +59,7 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-$SUFFIX = "<suffix from output>"
+# Use the $SUFFIX saved from step 1
 $ACR_NAME = "calmvaultacr$SUFFIX"
 $BACKEND_URL = "<backendUrl from output>"
 

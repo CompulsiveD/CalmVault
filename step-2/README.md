@@ -36,12 +36,12 @@ Note the `acrName` and `acrLoginServer` outputs.
 
 ### 2.2 Build the Container Images
 
-No Docker required — `az acr build` sends the source to ACR and builds in the cloud:
+No Docker required — `az acr build` sends the source to ACR and builds in the cloud. Use the `suffix` output from Step 1:
 
 **Bash:**
 
 ```bash
-SUFFIX=<suffix from output>
+# Use the SUFFIX saved from step 1
 ACR_NAME=calmvaultacr${SUFFIX}
 
 # Build backend image
@@ -62,7 +62,7 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-$SUFFIX = "<suffix from output>"
+# Use the $SUFFIX saved from step 1
 $ACR_NAME = "calmvaultacr$SUFFIX"
 
 # Build backend image

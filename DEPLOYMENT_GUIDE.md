@@ -36,51 +36,75 @@ az deployment sub create `
   --template-file step-1/infrastructure/main.bicep
 ```
 
-Note the outputs — you'll need `cosmosEndpoint` and `storageAccountName`.
+### 1.2 Save Deployment Outputs
 
-### 1.2 Retrieve Secrets
-
-The Bicep outputs intentionally exclude secrets. Retrieve them with the Azure CLI:
+After the deployment completes, save the key outputs — you'll need them for configuration and all subsequent steps.
 
 **Bash:**
 
 ```bash
-# Get the resource names from deployment output
-SUFFIX=<suffix from output>
+# Save all outputs at once
+SUFFIX=$(az deployment sub show --name main --query properties.outputs.suffix.value -o tsv)
+COSMOS_ENDPOINT=$(az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv)
+STORAGE_ACCOUNT=$(az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv)
 
-# Storage account connection string
-az storage account show-connection-string \
-  --name calmvault${SUFFIX} \
-  --resource-group rg-calmvault-${SUFFIX} \
-  --query connectionString -o tsv
-
-# Cosmos DB primary key
-az cosmosdb keys list \
-  --name calmvault-cosmos-${SUFFIX} \
-  --resource-group rg-calmvault-${SUFFIX} \
-  --query primaryMasterKey -o tsv
+echo "SUFFIX:          $SUFFIX"
+echo "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
+echo "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 ```
 
 **PowerShell:**
 
 ```powershell
-# Get the resource names from deployment output
-$SUFFIX = "<suffix from output>"
+# Save all outputs at once
+$SUFFIX = az deployment sub show --name main --query properties.outputs.suffix.value -o tsv
+$COSMOS_ENDPOINT = az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv
+$STORAGE_ACCOUNT = az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv
 
+Write-Output "SUFFIX:          $SUFFIX"
+Write-Output "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
+Write-Output "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
+```
+
+Keep these values handy — `SUFFIX` is used in every subsequent step, and the others are needed for backend configuration.
+
+### 1.3 Retrieve Secrets
+
+The Bicep outputs intentionally exclude secrets. Retrieve them using the variables saved in step 1.2:
+
+**Bash:**
+
+```bash
 # Storage account connection string
-az storage account show-connection-string `
-  --name "calmvault$SUFFIX" `
+STORAGE_CONN=$(az storage account show-connection-string \
+  --name $STORAGE_ACCOUNT \
+  --resource-group rg-calmvault-${SUFFIX} \
+  --query connectionString -o tsv)
+
+# Cosmos DB primary key
+COSMOS_KEY=$(az cosmosdb keys list \
+  --name calmvault-cosmos-${SUFFIX} \
+  --resource-group rg-calmvault-${SUFFIX} \
+  --query primaryMasterKey -o tsv)
+```
+
+**PowerShell:**
+
+```powershell
+# Storage account connection string
+$STORAGE_CONN = az storage account show-connection-string `
+  --name $STORAGE_ACCOUNT `
   --resource-group "rg-calmvault-$SUFFIX" `
   --query connectionString -o tsv
 
 # Cosmos DB primary key
-az cosmosdb keys list `
+$COSMOS_KEY = az cosmosdb keys list `
   --name "calmvault-cosmos-$SUFFIX" `
   --resource-group "rg-calmvault-$SUFFIX" `
   --query primaryMasterKey -o tsv
 ```
 
-### 1.3 Configure the Backend
+### 1.4 Configure the Backend
 
 **Bash:**
 
@@ -96,18 +120,18 @@ Set-Location step-1/backend
 Copy-Item .env.example .env
 ```
 
-Edit `.env` with the values from the previous step:
+Edit `.env` with the values from steps 1.2 and 1.3:
 
 ```
 PORT=3001
-AZURE_STORAGE_CONNECTION_STRING=<connection string from 1.2>
+AZURE_STORAGE_CONNECTION_STRING=<STORAGE_CONN from 1.3>
 AZURE_STORAGE_CONTAINER_NAME=calmvault-files
-COSMOS_ENDPOINT=<endpoint from deployment output>
-COSMOS_KEY=<key from 1.2>
+COSMOS_ENDPOINT=<COSMOS_ENDPOINT from 1.2>
+COSMOS_KEY=<COSMOS_KEY from 1.3>
 COSMOS_DATABASE_NAME=calmvault
 ```
 
-### 1.4 Start the Backend
+### 1.5 Start the Backend
 
 **Bash / PowerShell:**
 
@@ -133,7 +157,7 @@ Invoke-RestMethod http://localhost:3001/api/health
 # Expected: {"status":"ok"}
 ```
 
-### 1.5 Start the Frontend
+### 1.6 Start the Frontend
 
 In a new terminal:
 
@@ -147,7 +171,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser. You should see the CalmVault interface with a drag & drop upload zone.
 
-### 1.6 Verify End-to-End
+### 1.7 Verify End-to-End
 
 1. Drag a file onto the upload zone
 2. Add a tag (e.g., "test") and upload
@@ -186,7 +210,7 @@ Note the `acrName` and `acrLoginServer` from the outputs.
 **Bash:**
 
 ```bash
-SUFFIX=<suffix from output>
+# Use the SUFFIX saved from step 1.2
 ACR_NAME=calmvaultacr${SUFFIX}
 
 # Build backend
@@ -207,7 +231,7 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-$SUFFIX = "<suffix from output>"
+# Use the $SUFFIX saved from step 1.2
 $ACR_NAME = "calmvaultacr$SUFFIX"
 
 # Build backend
@@ -274,7 +298,7 @@ The frontend nginx proxies `/api/` to the backend. Rebuild with the actual backe
 **Bash:**
 
 ```bash
-SUFFIX=<suffix from output>
+# Use the SUFFIX saved from step 1.2
 ACR_NAME=calmvaultacr${SUFFIX}
 BACKEND_URL=<backendUrl from output>
 
@@ -289,7 +313,7 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-$SUFFIX = "<suffix from output>"
+# Use the $SUFFIX saved from step 1.2
 $ACR_NAME = "calmvaultacr$SUFFIX"
 $BACKEND_URL = "<backendUrl from output>"
 

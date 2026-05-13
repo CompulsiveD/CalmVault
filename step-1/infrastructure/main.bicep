@@ -31,3 +31,4 @@ output resourceGroupName string = resourceGroup.name
 output storageAccountName string = resources.outputs.storageAccountName
 output cosmosAccountName string = resources.outputs.cosmosAccountName
 output cosmosEndpoint string = resources.outputs.cosmosEndpoint
+output suffix string = suffix

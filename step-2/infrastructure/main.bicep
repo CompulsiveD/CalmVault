@@ -33,3 +33,4 @@ output cosmosAccountName string = resources.outputs.cosmosAccountName
 output cosmosEndpoint string = resources.outputs.cosmosEndpoint
 output acrName string = resources.outputs.acrName
 output acrLoginServer string = resources.outputs.acrLoginServer
+output suffix string = suffix
