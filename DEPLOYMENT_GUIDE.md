@@ -386,9 +386,41 @@ FRONTEND_URL: $FRONTEND_URL
 "@
 ```
 
-> **Tip:** These are your live public URLs! The deployment name is `main` (the Bicep file name without the extension). The frontend's `VITE_API_BASE_URL` environment variable is automatically set to the backend URL by the Bicep template — no manual rebuild needed.
+> **Tip:** These are your live public URLs! The deployment name is `main` (the Bicep file name without the extension).
 
-### 3.3 Verify
+### 3.3 Update Frontend API Proxy
+
+The frontend needs to know where the backend lives. Rebuild the frontend container with the backend URL baked in:
+
+**Bash:**
+
+```bash
+# Use the SUFFIX saved from step 1.2
+ACR_NAME=calmvaultacr${SUFFIX}
+
+az acr build \
+  --registry $ACR_NAME \
+  --image calmvault-frontend:latest \
+  --file step-1/frontend/Dockerfile \
+  --build-arg VITE_API_BASE_URL=$BACKEND_URL \
+  .
+```
+
+**PowerShell:**
+
+```powershell
+# Use the $SUFFIX saved from step 1.2
+$ACR_NAME = "calmvaultacr$SUFFIX"
+
+az acr build `
+  --registry $ACR_NAME `
+  --image calmvault-frontend:latest `
+  --file step-1/frontend/Dockerfile `
+  --build-arg "VITE_API_BASE_URL=$BACKEND_URL" `
+  .
+```
+
+### 3.4 Verify
 
 **Bash:**
 
