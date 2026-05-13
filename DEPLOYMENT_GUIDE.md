@@ -420,7 +420,29 @@ az acr build `
   .
 ```
 
-### 3.4 Verify
+### 3.4 Re-deploy Container Apps
+
+After rebuilding the frontend image with the correct backend URL, re-deploy the infrastructure to pick up the updated container image:
+
+**Bash:**
+
+```bash
+az deployment sub create \
+  --location centralus \
+  --template-file step-3/infrastructure/main.bicep
+```
+
+**PowerShell:**
+
+```powershell
+az deployment sub create `
+  --location centralus `
+  --template-file step-3/infrastructure/main.bicep
+```
+
+> **Tip:** This re-deploys the same template. Azure will detect the updated frontend image in ACR and restart the frontend Container App with the new version.
+
+### 3.5 Verify
 
 **Bash:**
 

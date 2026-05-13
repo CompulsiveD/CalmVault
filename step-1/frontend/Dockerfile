@@ -1,4 +1,7 @@
 FROM node:26-alpine AS build
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
 WORKDIR /app
 COPY step-1/frontend/package*.json ./
 RUN npm install -g typescript vite vue-tsc
@@ -7,6 +10,8 @@ COPY step-1/frontend/ ./
 RUN npm run build
 
 FROM nginx:alpine
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 # Remove default config
 RUN rm /etc/nginx/conf.d/default.conf
