@@ -143,7 +143,7 @@ COSMOS_KEY=$COSMOS_KEY
 COSMOS_DATABASE_NAME=calmvault
 ──────────── end of .env content ────────────
 "@
-```
+
 
 > **What just happened?** You retrieved the storage connection string (like a URL + password for the storage account) and the Cosmos DB primary key (the database password). These are printed as a ready-to-use `.env` file.
 
