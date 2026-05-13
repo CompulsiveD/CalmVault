@@ -116,5 +116,5 @@ az acr repository show-tags --name $ACR_NAME --repository calmvault-backend --ou
 
 | Image | Base | Exposes | Purpose |
 | --- | --- | --- | --- |
-| `calmvault-backend` | `node:20-alpine` | 3001 | Express API server |
-| `calmvault-frontend` | `nginx:alpine` | 80 | Static SPA + API reverse proxy |
+| `calmvault-backend` | `node:20-alpine` | 3001 | Express API server (non-root, with health check) |
+| `calmvault-frontend` | `nginx:alpine` | 8080 | Static SPA + API reverse proxy (non-root, with health check) |

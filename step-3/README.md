@@ -133,4 +133,4 @@ Write-Output https://<frontend-fqdn>
 | App | Image | Port | External | Scale | Secrets |
 | --- | --- | --- | --- | --- | --- |
 | `calmvault-backend-<suffix>` | `calmvault-backend:latest` | 3001 | Yes | 0–3 | Storage connection string, Cosmos key, ACR password |
-| `calmvault-frontend-<suffix>` | `calmvault-frontend:latest` | 80 | Yes | 0–3 | ACR password |
+| `calmvault-frontend-<suffix>` | `calmvault-frontend:latest` | 8080 | Yes | 0–3 | ACR password |
