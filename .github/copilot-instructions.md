@@ -1,12 +1,30 @@
 # CalmVault — Copilot Instructions
 
+## Repository Structure
+
+CalmVault is organized as a **step-by-step deployment lab**. Each `step-N/` folder is an incremental addition containing only new or modified files for that stage.
+
+```
+step-1/          ← Deploy infrastructure + run locally
+  backend/       ← Express + TypeScript REST API
+  frontend/      ← Vue 3 + TypeScript SPA (Vite)
+  infrastructure/← Bicep templates for Azure
+step-2/          ← Add ACR + build container images (no local Docker)
+  infrastructure/← Bicep with ACR added
+  Dockerfile.backend  ← Backend API container (node:20-alpine)
+  Dockerfile.frontend ← Frontend SPA container (nginx:alpine)
+  nginx.conf     ← nginx config for SPA routing + API proxy
+step-3/          ← Deploy to Azure Container Apps
+  infrastructure/← Bicep with Container Apps Environment + apps
+```
+
+The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
+
 ## Architecture
 
-CalmVault is a monorepo with three top-level directories:
-
-- **`backend/`** — Express + TypeScript REST API (Node.js). Handles file uploads, metadata CRUD, and proxies Azure services. Runs on port 3001.
-- **`frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
-- **`infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
+- **`step-1/backend/`** — Express + TypeScript REST API (Node.js). Handles file uploads, metadata CRUD, and proxies Azure services. Runs on port 3001.
+- **`step-1/frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
+- **`step-1/infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
 
 Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB** (serverless). There is no authentication (MVP).
 
@@ -20,14 +38,14 @@ Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Az
 ### Key types
 
 The `FileMetadata` interface is the central data model, defined in both:
-- `backend/src/models/file.ts`
-- `frontend/src/types/file.ts`
+- `step-1/backend/src/models/file.ts`
+- `step-1/frontend/src/types/file.ts`
 
 These must stay in sync manually. If you add a field to one, add it to the other.
 
 ## Build & Run Commands
 
-### Backend (`cd backend`)
+### Backend (`cd step-1/backend`)
 
 | Command            | Description                        |
 | ------------------ | ---------------------------------- |
@@ -36,7 +54,7 @@ These must stay in sync manually. If you add a field to one, add it to the other
 | `npm run start`    | Run compiled output                |
 | `npm run typecheck`| Type-check without emitting        |
 
-### Frontend (`cd frontend`)
+### Frontend (`cd step-1/frontend`)
 
 | Command            | Description                        |
 | ------------------ | ---------------------------------- |
@@ -44,10 +62,10 @@ These must stay in sync manually. If you add a field to one, add it to the other
 | `npm run build`    | Type-check + production build      |
 | `npm run preview`  | Preview production build           |
 
-### Infrastructure (`cd infrastructure`)
+### Infrastructure (`cd step-1/infrastructure`)
 
 ```bash
-az deployment sub create --location centralus --template-file infrastructure/main.bicep
+az deployment sub create --location centralus --template-file step-1/infrastructure/main.bicep
 ```
 
 All resource names follow the pattern `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts, which disallow hyphens). The suffix defaults to a 4-character hash derived from the subscription ID.
@@ -59,11 +77,16 @@ Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource
 | Resource | Type | Name Pattern | Notes |
 | --- | --- | --- | --- |
 | Resource Group | `Microsoft.Resources/resourceGroups` | `rg-calmvault-<suffix>` | Default region: `centralus`, tagged `SecurityControl: Ignore` |
-| Storage Account | `Microsoft.Storage/storageAccounts` | `calmvault<suffix>` | Standard LRS, TLS 1.2, no public blob access |
+| Storage Account | `Microsoft.Storage/storageAccounts` | `calmvault<suffix>` | Standard LRS, TLS 1.2, no public blob access, shared key access enabled |
 | Blob Container | `storageAccounts/blobServices/containers` | `calmvault-files` | Created inside the storage account |
 | Cosmos DB Account | `Microsoft.DocumentDB/databaseAccounts` | `calmvault-cosmos-<suffix>` | Serverless mode, Session consistency, local auth enabled |
 | Cosmos DB Database | `databaseAccounts/sqlDatabases` | `calmvault` | SQL API |
 | Cosmos DB Container | `sqlDatabases/containers` | `files` | Partition key: `/id` |
+| Container Registry | `Microsoft.ContainerRegistry/registries` | `calmvaultacr<suffix>` | Basic SKU, admin user enabled (added in step-2) |
+| Log Analytics | `Microsoft.OperationalInsights/workspaces` | `calmvault-logs-<suffix>` | 30-day retention (added in step-3) |
+| Container Apps Env | `Microsoft.App/managedEnvironments` | `calmvault-env-<suffix>` | Linked to Log Analytics (added in step-3) |
+| Backend Container App | `Microsoft.App/containerApps` | `calmvault-backend-<suffix>` | Port 3001, external ingress, 0–3 replicas (added in step-3) |
+| Frontend Container App | `Microsoft.App/containerApps` | `calmvault-frontend-<suffix>` | Port 80, external ingress, 0–3 replicas (added in step-3) |
 
 ### Environment
 
@@ -101,9 +124,17 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 - **Delete confirmation**: Uses `window.confirm()` in `App.vue` before calling the API.
 - **Tags**: Always lowercased and trimmed before saving. Backspace in an empty tag input removes the last tag.
 
+### Lab authoring
+
+- Each step folder (`step-N/`) is an **incremental addition** — it contains only new or modified files for that stage. Earlier steps remain unchanged.
+- The root `DEPLOYMENT_GUIDE.md` provides the lab walkthrough. Keep it in sync when adding new steps.
+- Dockerfiles reference source from previous steps (e.g., `step-1/frontend/`) since the build context is the repo root.
+- **Dual-platform commands**: All CLI command blocks in READMEs and the deployment guide must include both Bash and PowerShell equivalents. Use **Bash:** / **PowerShell:** labels before each block. For commands identical in both shells, use a single block labeled **Bash / PowerShell:**.
+- Minimal, calm design language applies to documentation as well — clear headings, short paragraphs, no clutter.
+
 ### Design philosophy
 
 - Minimal, calm, iCloud-inspired UI — lots of whitespace, soft colors (accent: `#5ba4cf`)
 - Tag-based organization only (no folder hierarchy)
-- Upload limit: 50 MB per file (enforced by multer in `backend/src/middleware/upload.ts`)
+- Upload limit: 50 MB per file (enforced by multer in `step-1/backend/src/middleware/upload.ts`)
 - Responsive: sidebar collapses to a slide-in menu on mobile (≤768px)
