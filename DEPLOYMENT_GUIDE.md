@@ -89,45 +89,65 @@ Write-Output "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 
 > **Tip:** Write down the `SUFFIX` value (e.g., `a1b2`). It's a 4-character code unique to your subscription and used in all resource names throughout this lab. If you close your terminal, you can always re-run these commands to get the values again.
 
-### 1.3 Retrieve Secrets
+### 1.3 Retrieve Secrets & Generate .env File
 
-Some sensitive values (connection strings, keys) are intentionally excluded from Bicep outputs for security. We'll retrieve them separately using the variables saved in step 1.2.
+Some sensitive values (connection strings, keys) are intentionally excluded from Bicep outputs for security. The commands below retrieve those secrets and print the complete `.env` file content — ready to copy and paste.
 
 **Bash:**
 
 ```bash
-# Connection string — this is like a URL + password for the storage account
+# Retrieve secrets using variables from step 1.2
 STORAGE_CONN=$(az storage account show-connection-string \
   --name $STORAGE_ACCOUNT \
   --resource-group rg-calmvault-${SUFFIX} \
   --query connectionString -o tsv)
 
-# Primary key — the password for Cosmos DB
 COSMOS_KEY=$(az cosmosdb keys list \
   --name calmvault-cosmos-${SUFFIX} \
   --resource-group rg-calmvault-${SUFFIX} \
   --query primaryMasterKey -o tsv)
+
+# Print the complete .env file — copy everything between the lines
+echo "──────────── .env content (copy below) ────────────"
+echo "PORT=3001"
+echo "AZURE_STORAGE_CONNECTION_STRING=$STORAGE_CONN"
+echo "AZURE_STORAGE_CONTAINER_NAME=calmvault-files"
+echo "COSMOS_ENDPOINT=$COSMOS_ENDPOINT"
+echo "COSMOS_KEY=$COSMOS_KEY"
+echo "COSMOS_DATABASE_NAME=calmvault"
+echo "──────────── end of .env content ────────────"
 ```
 
 **PowerShell:**
 
 ```powershell
-# Connection string — this is like a URL + password for the storage account
+# Retrieve secrets using variables from step 1.2
 $STORAGE_CONN = az storage account show-connection-string `
   --name $STORAGE_ACCOUNT `
   --resource-group "rg-calmvault-$SUFFIX" `
   --query connectionString -o tsv
 
-# Primary key — the password for Cosmos DB
 $COSMOS_KEY = az cosmosdb keys list `
   --name "calmvault-cosmos-$SUFFIX" `
   --resource-group "rg-calmvault-$SUFFIX" `
   --query primaryMasterKey -o tsv
+
+# Print the complete .env file — copy everything between the lines
+Write-Output "──────────── .env content (copy below) ────────────"
+Write-Output "PORT=3001"
+Write-Output "AZURE_STORAGE_CONNECTION_STRING=$STORAGE_CONN"
+Write-Output "AZURE_STORAGE_CONTAINER_NAME=calmvault-files"
+Write-Output "COSMOS_ENDPOINT=$COSMOS_ENDPOINT"
+Write-Output "COSMOS_KEY=$COSMOS_KEY"
+Write-Output "COSMOS_DATABASE_NAME=calmvault"
+Write-Output "──────────── end of .env content ────────────"
 ```
+
+> **What just happened?** You retrieved the storage connection string (like a URL + password for the storage account) and the Cosmos DB primary key (the database password). These are printed as a ready-to-use `.env` file.
 
 ### 1.4 Configure the Backend
 
-The backend needs to know how to connect to Azure. We store these settings in a `.env` file (which is git-ignored so secrets don't end up in source control).
+Create the `.env` file and paste the output from step 1.3:
 
 **Bash:**
 
@@ -143,18 +163,9 @@ Set-Location step-1/backend
 Copy-Item .env.example .env
 ```
 
-Edit `.env` with the values from steps 1.2 and 1.3:
+Open `step-1/backend/.env` in your editor and replace its contents with the output you copied from step 1.3 (everything between the `────────` lines).
 
-```
-PORT=3001
-AZURE_STORAGE_CONNECTION_STRING=<STORAGE_CONN from 1.3>
-AZURE_STORAGE_CONTAINER_NAME=calmvault-files
-COSMOS_ENDPOINT=<COSMOS_ENDPOINT from 1.2>
-COSMOS_KEY=<COSMOS_KEY from 1.3>
-COSMOS_DATABASE_NAME=calmvault
-```
-
-> **Tip:** If you're using the same terminal session, you can echo the values directly: `echo $STORAGE_CONN` (Bash) or `Write-Output $STORAGE_CONN` (PowerShell).
+> **Tip:** The `.env` file is git-ignored so your secrets won't accidentally get committed to source control.
 
 ### 1.5 Start the Backend
 
