@@ -46,62 +46,36 @@ az deployment sub create `
 
 Note the `backendUrl` and `frontendUrl` from the outputs — these are your live public URLs!
 
-### 3.2 Update Frontend API URL
+> **Note:** The Bicep template automatically sets `VITE_API_BASE_URL` on the frontend Container App to point to the backend URL — no manual rebuild needed.
 
-The frontend nginx container needs to know where the backend lives. Rebuild the frontend image with the backend URL baked in:
-
-**Bash:**
-
-```bash
-# Use the SUFFIX saved from step 1
-ACR_NAME=calmvaultacr${SUFFIX}
-BACKEND_URL=<backendUrl from output>
-
-az acr build \
-  --registry $ACR_NAME \
-  --image calmvault-frontend:latest \
-  --file step-1/frontend/Dockerfile \
-  --build-arg VITE_API_BASE_URL=$BACKEND_URL \
-  .
-```
-
-**PowerShell:**
-
-```powershell
-# Use the $SUFFIX saved from step 1
-$ACR_NAME = "calmvaultacr$SUFFIX"
-$BACKEND_URL = "<backendUrl from output>"
-
-az acr build `
-  --registry $ACR_NAME `
-  --image calmvault-frontend:latest `
-  --file step-1/frontend/Dockerfile `
-  --build-arg "VITE_API_BASE_URL=$BACKEND_URL" `
-  .
-```
-
-### 3.3 Verify
+### 3.2 Verify
 
 **Bash:**
 
 ```bash
+BACKEND_URL=$(az deployment sub show --name main --query properties.outputs.backendUrl.value -o tsv)
+FRONTEND_URL=$(az deployment sub show --name main --query properties.outputs.frontendUrl.value -o tsv)
+
 # Check backend health
-curl https://<backend-fqdn>/api/health
+curl $BACKEND_URL/api/health
 # Expected: {"status":"ok"}
 
 # Open frontend in browser
-echo https://<frontend-fqdn>
+echo $FRONTEND_URL
 ```
 
 **PowerShell:**
 
 ```powershell
+$BACKEND_URL = az deployment sub show --name main --query properties.outputs.backendUrl.value -o tsv
+$FRONTEND_URL = az deployment sub show --name main --query properties.outputs.frontendUrl.value -o tsv
+
 # Check backend health
-Invoke-RestMethod https://<backend-fqdn>/api/health
+Invoke-RestMethod "$BACKEND_URL/api/health"
 # Expected: @{status=ok}
 
 # Open frontend in browser
-Write-Output https://<frontend-fqdn>
+Write-Output $FRONTEND_URL
 ```
 
 > **Tip:** The first request may take 10–20 seconds because Container Apps scales from zero (no instances running until the first request arrives). Subsequent requests will be fast.
