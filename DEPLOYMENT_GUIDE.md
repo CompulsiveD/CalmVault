@@ -360,9 +360,35 @@ az deployment sub create `
 
 > **Tip:** This step takes 3–5 minutes because it creates several resources. The template automatically wires up the secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
 
-Note the `backendUrl` and `frontendUrl` from the outputs — these are your live URLs!
+### 3.2 Save Deployment Outputs
 
-### 3.2 Update Frontend API Proxy
+Save the backend and frontend URLs from the deployment — you'll need them for the remaining steps.
+
+**Bash:**
+
+```bash
+BACKEND_URL=$(az deployment sub show --name main --query properties.outputs.backendUrl.value -o tsv)
+FRONTEND_URL=$(az deployment sub show --name main --query properties.outputs.frontendUrl.value -o tsv)
+
+echo "BACKEND_URL:  $BACKEND_URL"
+echo "FRONTEND_URL: $FRONTEND_URL"
+```
+
+**PowerShell:**
+
+```powershell
+$BACKEND_URL = az deployment sub show --name main --query properties.outputs.backendUrl.value -o tsv
+$FRONTEND_URL = az deployment sub show --name main --query properties.outputs.frontendUrl.value -o tsv
+
+Write-Output @"
+BACKEND_URL:  $BACKEND_URL
+FRONTEND_URL: $FRONTEND_URL
+"@
+```
+
+> **Tip:** These are your live public URLs! The deployment name is `main` (the Bicep file name without the extension).
+
+### 3.3 Update Frontend API Proxy
 
 The frontend needs to know where the backend lives. Rebuild the frontend container with the backend URL baked in:
 
@@ -371,7 +397,6 @@ The frontend needs to know where the backend lives. Rebuild the frontend contain
 ```bash
 # Use the SUFFIX saved from step 1.2
 ACR_NAME=calmvaultacr${SUFFIX}
-BACKEND_URL=<backendUrl from output>
 
 az acr build \
   --registry $ACR_NAME \
@@ -386,7 +411,6 @@ az acr build \
 ```powershell
 # Use the $SUFFIX saved from step 1.2
 $ACR_NAME = "calmvaultacr$SUFFIX"
-$BACKEND_URL = "<backendUrl from output>"
 
 az acr build `
   --registry $ACR_NAME `
@@ -396,22 +420,24 @@ az acr build `
   .
 ```
 
-### 3.3 Verify
+### 3.4 Verify
 
 **Bash:**
 
 ```bash
-# Backend health check
-curl <backendUrl>/api/health
+curl $BACKEND_URL/api/health
 # Expected: {"status":"ok"}
+
+echo $FRONTEND_URL
 ```
 
 **PowerShell:**
 
 ```powershell
-# Backend health check
-Invoke-RestMethod "<backendUrl>/api/health"
+Invoke-RestMethod "$BACKEND_URL/api/health"
 # Expected: @{status=ok}
+
+Write-Output $FRONTEND_URL
 ```
 
 Open the frontend URL in your browser. Upload a file and confirm it round-trips through the backend to Blob Storage.
