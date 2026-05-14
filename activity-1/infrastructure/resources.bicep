@@ -48,9 +48,7 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview
   properties: {
     databaseAccountOfferType: 'Standard'
     disableLocalAuth: false
-    capabilities: [
-      { name: 'EnableServerless' }
-    ]
+    capacityMode: 'Serverless'
     locations: [
       {
         locationName: location
