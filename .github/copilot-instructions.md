@@ -159,3 +159,10 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 - Tag-based organization only (no folder hierarchy)
 - Upload limit: 50 MB per file (enforced by multer in `activity-1/backend/src/middleware/upload.ts`)
 - Responsive: sidebar collapses to a slide-in menu on mobile (≤768px)
+
+### Lab authoring
+
+- **Pause for architectural tradeoffs.** When multiple valid approaches exist for a new feature (e.g., Container Apps vs Container App Jobs, polling vs event-driven, queue vs webhook), stop and present the options with pros/cons before implementing. Do not commit to an architecture without confirmation.
+- Activities are incremental — each `activity-N/` folder contains only new or changed files for that stage.
+- Every infrastructure or code change must be reflected in `DEPLOYMENT_GUIDE.md`, the activity README, and `.github/copilot-instructions.md`.
+- Keep deployment steps copy-paste friendly (provide both Bash and PowerShell variants).
