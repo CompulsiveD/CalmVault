@@ -25,3 +25,4 @@ module resources 'resources.bicep' = {
 
 output suffix string = suffix
 output logAnalyticsName string = resources.outputs.logAnalyticsName
+output dashboardName string = resources.outputs.dashboardName

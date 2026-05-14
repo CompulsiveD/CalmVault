@@ -510,16 +510,17 @@ az deployment sub create `
   --template-file activity-4/infrastructure/main.bicep
 ```
 
-> **Tip:** This takes about 1–2 minutes. It wires existing resources to send logs to the Log Analytics workspace — no new resources are created.
+> **Tip:** This takes about 1–2 minutes. It wires existing resources to send logs to the Log Analytics workspace and creates a monitoring dashboard.
 
-### 4.2 Verify Diagnostic Settings
+### 4.2 Verify
 
-Open the Azure Portal and check that diagnostic settings are configured:
+Open the Azure Portal and check that everything is configured:
 
 1. Navigate to your resource group (`rg-calmvault-<suffix>`)
 2. Click on the **Storage Account** → **Diagnostic settings** (under Monitoring)
 3. Confirm a setting named `calmvault<suffix>-blob-diag` exists and targets the Log Analytics workspace
 4. Repeat for **Cosmos DB** and **Container Registry**
+5. Find the **Dashboard** resource (`calmvault-dashboard-<suffix>`) and open it — you'll see 4 empty panels that will populate once traffic flows
 
 ### 4.3 Generate Traffic & Query Logs
 

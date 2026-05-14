@@ -12,6 +12,8 @@ var logAnalyticsName = '${projectName}-logs-${suffix}'
 var storageAccountName = '${projectName}${suffix}'
 var cosmosAccountName = '${projectName}-cosmos-${suffix}'
 var acrName = '${projectName}acr${suffix}'
+var backendAppName = '${projectName}-backend-${suffix}'
+var dashboardName = '${projectName}-dashboard-${suffix}'
 
 // ── Existing Resources ─────────────────────────────────────
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
@@ -36,33 +38,33 @@ resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existin
 }
 
 // ── Diagnostic Settings: Storage Account (Blob) ────────────
-resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${storageAccountName}-blob-diag'
-  scope: storageBlob
-  properties: {
-    workspaceId: logAnalytics.id
-    logs: [
-      {
-        category: 'StorageRead'
-        enabled: true
-      }
-      {
-        category: 'StorageWrite'
-        enabled: true
-      }
-      {
-        category: 'StorageDelete'
-        enabled: true
-      }
-    ]
-    metrics: [
-      {
-        category: 'Transaction'
-        enabled: true
-      }
-    ]
-  }
-}
+// resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+//   name: '${storageAccountName}-blob-diag'
+//   scope: storageBlob
+//   properties: {
+//     workspaceId: logAnalytics.id
+//     logs: [
+//       {
+//         category: 'StorageRead'
+//         enabled: true
+//       }
+//       {
+//         category: 'StorageWrite'
+//         enabled: true
+//       }
+//       {
+//         category: 'StorageDelete'
+//         enabled: true
+//       }
+//     ]
+//     metrics: [
+//       {
+//         category: 'Transaction'
+//         enabled: true
+//       }
+//     ]
+//   }
+// }
 
 // ── Diagnostic Settings: Cosmos DB ─────────────────────────
 resource cosmosDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -118,5 +120,104 @@ resource acrDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
+// ── Azure Dashboard ────────────────────────────────────────
+resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
+  name: dashboardName
+  location: location
+  properties: {
+    lenses: [
+      {
+        order: 0
+        parts: [
+          {
+            position: { x: 0, y: 0, rowSpan: 4, colSpan: 6 }
+            metadata: {
+              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              inputs: [
+                { name: 'resourceTypeMode', value: 'workspace' }
+                { name: 'ComponentId', value: logAnalytics.id }
+                {
+                  name: 'Query'
+                  value: 'StorageBlobLogs\n| where OperationName startswith "Put"\n| summarize Uploads=count() by bin(TimeGenerated, 1h)\n| render timechart'
+                }
+                { name: 'TimeRange', value: 'PT24H' }
+                { name: 'PartTitle', value: 'File Uploads (hourly)' }
+              ]
+              #disable-next-line BCP036
+              settings: {}
+            }
+          }
+          {
+            position: { x: 6, y: 0, rowSpan: 4, colSpan: 6 }
+            metadata: {
+              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              inputs: [
+                { name: 'resourceTypeMode', value: 'workspace' }
+                { name: 'ComponentId', value: logAnalytics.id }
+                {
+                  name: 'Query'
+                  value: 'StorageBlobLogs\n| where OperationName startswith "Get"\n| summarize Downloads=count() by bin(TimeGenerated, 1h)\n| render timechart'
+                }
+                { name: 'TimeRange', value: 'PT24H' }
+                { name: 'PartTitle', value: 'File Downloads (hourly)' }
+              ]
+              #disable-next-line BCP036
+              settings: {}
+            }
+          }
+          {
+            position: { x: 0, y: 4, rowSpan: 4, colSpan: 6 }
+            metadata: {
+              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              inputs: [
+                { name: 'resourceTypeMode', value: 'workspace' }
+                { name: 'ComponentId', value: logAnalytics.id }
+                {
+                  name: 'Query'
+                  value: 'CDBDataPlaneRequests\n| summarize RequestCount=count() by bin(TimeGenerated, 5m)\n| render timechart'
+                }
+                { name: 'TimeRange', value: 'PT4H' }
+                { name: 'PartTitle', value: 'Cosmos DB Requests (5-min)' }
+              ]
+              #disable-next-line BCP036
+              settings: {}
+            }
+          }
+          {
+            position: { x: 6, y: 4, rowSpan: 4, colSpan: 6 }
+            metadata: {
+              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              inputs: [
+                { name: 'resourceTypeMode', value: 'workspace' }
+                { name: 'ComponentId', value: logAnalytics.id }
+                {
+                  name: 'Query'
+                  value: 'CDBDataPlaneRequests\n| where StatusCode >= 400\n| summarize Errors=count() by bin(TimeGenerated, 5m)\n| render timechart'
+                }
+                { name: 'TimeRange', value: 'PT4H' }
+                { name: 'PartTitle', value: 'Cosmos DB Errors (5-min)' }
+              ]
+              #disable-next-line BCP036
+              settings: {}
+            }
+          }
+        ]
+      }
+    ]
+    metadata: {
+      model: {
+        timeRange: {
+          value: { relative: { duration: 24, timeUnit: 1 } }
+          type: 'MsPortalFx.Composition.Configuration.ValueTypes.TimeRange'
+        }
+      }
+    }
+  }
+  tags: {
+    'hidden-title': 'CalmVault Monitoring Dashboard'
+  }
+}
+
 // ── Outputs ────────────────────────────────────────────────
 output logAnalyticsName string = logAnalytics.name
+output dashboardName string = dashboard.name

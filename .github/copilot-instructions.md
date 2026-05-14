@@ -28,7 +28,7 @@ The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
 - **`activity-1/frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
 - **`activity-1/infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
 - **`activity-3/infrastructure/`** — Split into `backend.main.bicep` (deploys Log Analytics, Container Apps Environment, backend app) and `frontend.main.bicep` (deploys frontend app). Backend is deployed first so its URL can be passed to the frontend image build.
-- **`activity-4/infrastructure/`** — Adds diagnostic settings that send logs and metrics from Storage (Blob), Cosmos DB, and Container Registry to the existing Log Analytics workspace.
+- **`activity-4/infrastructure/`** — Adds diagnostic settings that send logs and metrics from Storage (Blob), Cosmos DB, and Container Registry to the existing Log Analytics workspace. Also creates an Azure Dashboard with KQL-powered panels for file uploads, downloads, and Cosmos DB activity.
 
 Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB** (serverless). There is no authentication (MVP).
 
@@ -94,6 +94,7 @@ Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource
 | Diagnostic Setting (Storage Blob) | `Microsoft.Insights/diagnosticSettings` | `calmvault<suffix>-blob-diag` | Blob read/write/delete logs + transaction metrics (added in activity-4) |
 | Diagnostic Setting (Cosmos DB) | `Microsoft.Insights/diagnosticSettings` | `calmvault-cosmos-<suffix>-diag` | Data plane requests, query stats, partition key stats (added in activity-4) |
 | Diagnostic Setting (ACR) | `Microsoft.Insights/diagnosticSettings` | `calmvaultacr<suffix>-diag` | Repository events, login events + all metrics (added in activity-4) |
+| Azure Dashboard | `Microsoft.Portal/dashboards` | `calmvault-dashboard-<suffix>` | 4 panels: uploads, downloads, Cosmos requests, Cosmos errors (added in activity-4) |
 
 ### Environment
 
