@@ -121,7 +121,7 @@ resource acrDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 // ── Azure Dashboard ────────────────────────────────────────
-resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
+resource dashboard 'Microsoft.Portal/dashboards@2025-04-01-preview' = {
   name: dashboardName
   location: location
   properties: {
@@ -132,6 +132,7 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 0, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
+              #disable-next-line BCP036
               type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
               inputs: [
                 { name: 'resourceTypeMode', value: 'workspace' }
@@ -150,6 +151,7 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 6, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
+              #disable-next-line BCP036
               type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
               inputs: [
                 { name: 'resourceTypeMode', value: 'workspace' }
@@ -168,6 +170,7 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 0, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
+              #disable-next-line BCP036
               type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
               inputs: [
                 { name: 'resourceTypeMode', value: 'workspace' }
@@ -186,6 +189,7 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 6, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
+              #disable-next-line BCP036
               type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
               inputs: [
                 { name: 'resourceTypeMode', value: 'workspace' }
