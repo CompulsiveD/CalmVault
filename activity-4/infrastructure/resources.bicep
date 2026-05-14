@@ -132,73 +132,57 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 0, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
-              inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
-                {
-                  name: 'Query'
-                  value: 'StorageBlobLogs\n| where OperationName startswith "Put"\n| summarize Uploads=count() by bin(TimeGenerated, 1h)\n| render timechart'
+              type: 'Extension/HubsExtension/PartType/MarkdownPart'
+              inputs: []
+              settings: {
+                content: {
+                  content: '## 📤 File Uploads\n\nRun this query in Log Analytics to see upload activity:\n\n```kql\nStorageBlobLogs\n| where OperationName startswith "Put"\n| summarize Uploads=count() by bin(TimeGenerated, 1h)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
+                  title: 'File Uploads (hourly)'
+                  subtitle: 'StorageBlobLogs — Put operations'
                 }
-                { name: 'TimeRange', value: 'PT24H' }
-                { name: 'PartTitle', value: 'File Uploads (hourly)' }
-              ]
-              #disable-next-line BCP036
-              settings: {}
+              }
             }
           }
           {
             position: { x: 6, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
-              inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
-                {
-                  name: 'Query'
-                  value: 'StorageBlobLogs\n| where OperationName startswith "Get"\n| summarize Downloads=count() by bin(TimeGenerated, 1h)\n| render timechart'
+              type: 'Extension/HubsExtension/PartType/MarkdownPart'
+              inputs: []
+              settings: {
+                content: {
+                  content: '## 📥 File Downloads\n\nRun this query in Log Analytics to see download activity:\n\n```kql\nStorageBlobLogs\n| where OperationName startswith "Get"\n| summarize Downloads=count() by bin(TimeGenerated, 1h)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
+                  title: 'File Downloads (hourly)'
+                  subtitle: 'StorageBlobLogs — Get operations'
                 }
-                { name: 'TimeRange', value: 'PT24H' }
-                { name: 'PartTitle', value: 'File Downloads (hourly)' }
-              ]
-              #disable-next-line BCP036
-              settings: {}
+              }
             }
           }
           {
             position: { x: 0, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
-              inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
-                {
-                  name: 'Query'
-                  value: 'CDBDataPlaneRequests\n| summarize RequestCount=count() by bin(TimeGenerated, 5m)\n| render timechart'
+              type: 'Extension/HubsExtension/PartType/MarkdownPart'
+              inputs: []
+              settings: {
+                content: {
+                  content: '## 🗄️ Cosmos DB Requests\n\nRun this query in Log Analytics to see database activity:\n\n```kql\nCDBDataPlaneRequests\n| summarize RequestCount=count() by bin(TimeGenerated, 5m)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
+                  title: 'Cosmos DB Requests (5-min)'
+                  subtitle: 'CDBDataPlaneRequests'
                 }
-                { name: 'TimeRange', value: 'PT4H' }
-                { name: 'PartTitle', value: 'Cosmos DB Requests (5-min)' }
-              ]
-              #disable-next-line BCP036
-              settings: {}
+              }
             }
           }
           {
             position: { x: 6, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
-              inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
-                {
-                  name: 'Query'
-                  value: 'CDBDataPlaneRequests\n| where StatusCode >= 400\n| summarize Errors=count() by bin(TimeGenerated, 5m)\n| render timechart'
+              type: 'Extension/HubsExtension/PartType/MarkdownPart'
+              inputs: []
+              settings: {
+                content: {
+                  content: '## ⚠️ Cosmos DB Errors\n\nRun this query in Log Analytics to see database errors:\n\n```kql\nCDBDataPlaneRequests\n| where StatusCode >= 400\n| summarize Errors=count() by bin(TimeGenerated, 5m)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
+                  title: 'Cosmos DB Errors (5-min)'
+                  subtitle: 'CDBDataPlaneRequests — Status >= 400'
                 }
-                { name: 'TimeRange', value: 'PT4H' }
-                { name: 'PartTitle', value: 'Cosmos DB Errors (5-min)' }
-              ]
-              #disable-next-line BCP036
-              settings: {}
+              }
             }
           }
         ]
