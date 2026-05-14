@@ -1,6 +1,6 @@
-# Step 3 — Deploy to Azure Container Apps
+# Activity 3 — Deploy to Azure Container Apps
 
-This step deploys the backend and frontend containers from ACR to Azure Container Apps — a managed service that runs your containers in the cloud with automatic scaling and a public URL.
+This activity deploys the backend and frontend containers from ACR to Azure Container Apps — a managed service that runs your containers in the cloud with automatic scaling and a public URL.
 
 ## Key Concepts
 
@@ -22,7 +22,7 @@ This step deploys the backend and frontend containers from ACR to Azure Containe
 
 ### 3.1 Deploy Backend Container App
 
-> **Prerequisite:** Container images must already exist in ACR (see Step 2). If you haven't built them yet, go back and complete Step 2 first.
+> **Prerequisite:** Container images must already exist in ACR (see Activity 2). If you haven't built them yet, go back and complete Activity 2 first.
 
 From the repository root:
 
@@ -31,7 +31,7 @@ From the repository root:
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/backend.main.bicep
+  --template-file activity-3/infrastructure/backend.main.bicep
 ```
 
 **PowerShell:**
@@ -39,7 +39,7 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/backend.main.bicep
+  --template-file activity-3/infrastructure/backend.main.bicep
 ```
 
 > **Tip:** This creates the Log Analytics workspace, Container Apps Environment, and backend Container App. Takes 3–5 minutes.
@@ -53,14 +53,14 @@ The frontend needs to know where the backend lives. Rebuild the frontend image w
 **Bash:**
 
 ```bash
-# Use the SUFFIX saved from step 1
+# Use the SUFFIX saved from Activity 1
 ACR_NAME=calmvaultacr${SUFFIX}
 BACKEND_URL=$(az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv)
 
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-1/frontend/Dockerfile \
+  --file activity-1/frontend/Dockerfile \
   --build-arg VITE_API_BASE_URL=$BACKEND_URL \
   .
 ```
@@ -68,14 +68,14 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-# Use the $SUFFIX saved from step 1
+# Use the $SUFFIX saved from Activity 1
 $ACR_NAME = "calmvaultacr$SUFFIX"
 $BACKEND_URL = az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv
 
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-1/frontend/Dockerfile `
+  --file activity-1/frontend/Dockerfile `
   --build-arg "VITE_API_BASE_URL=$BACKEND_URL" `
   .
 ```
@@ -87,7 +87,7 @@ az acr build `
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/frontend.main.bicep
+  --template-file activity-3/infrastructure/frontend.main.bicep
 ```
 
 **PowerShell:**
@@ -95,7 +95,7 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/frontend.main.bicep
+  --template-file activity-3/infrastructure/frontend.main.bicep
 ```
 
 ### 3.4 Verify

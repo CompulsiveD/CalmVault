@@ -1,6 +1,6 @@
 # CalmVault — Deployment Guide
 
-A step-by-step guide to deploying CalmVault from scratch. This lab is designed for developers at the **100–200 level** — you should be comfortable with basic command-line usage and web development, but no prior Azure experience is required.
+A hands-on guide to deploying CalmVault from scratch. This lab is designed for developers at the **100–200 level** — you should be comfortable with basic command-line usage and web development, but no prior Azure experience is required.
 
 ---
 
@@ -26,9 +26,9 @@ az account show --query name -o tsv
 
 ---
 
-## Step 1 — Deploy Infrastructure & Run Locally
+## Activity 1 — Deploy Infrastructure & Run Locally
 
-In this step, you'll create cloud resources in Azure (a storage account for files and a database for metadata), then run the application on your local machine connected to those cloud resources.
+In this activity, you'll create cloud resources in Azure (a storage account for files and a database for metadata), then run the application on your local machine connected to those cloud resources.
 
 ### What you'll create
 
@@ -46,7 +46,7 @@ This command tells Azure to create all the resources defined in our Bicep templa
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-1/infrastructure/main.bicep
+  --template-file activity-1/infrastructure/main.bicep
 ```
 
 **PowerShell:**
@@ -54,14 +54,14 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-1/infrastructure/main.bicep
+  --template-file activity-1/infrastructure/main.bicep
 ```
 
 > **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. If you get an error about the location, make sure you typed `centralus` (no space).
 
 ### 1.2 Save Deployment Outputs
 
-The deployment created resources with auto-generated names. Let's save those names — you'll need them for configuration and all subsequent steps.
+The deployment created resources with auto-generated names. Let's save those names — you'll need them for configuration and all subsequent activities.
 
 **Bash:**
 
@@ -96,7 +96,7 @@ Some sensitive values (connection strings, keys) are intentionally excluded from
 **Bash:**
 
 ```bash
-# Retrieve secrets using variables from step 1.2
+# Retrieve secrets using variables from Activity 1.2
 STORAGE_CONN=$(az storage account show-connection-string \
   --name $STORAGE_ACCOUNT \
   --resource-group rg-calmvault-${SUFFIX} \
@@ -121,7 +121,7 @@ echo "──────────── end of .env content ─────�
 **PowerShell:**
 
 ```powershell
-# Retrieve secrets using variables from step 1.2
+# Retrieve secrets using variables from Activity 1.2
 $STORAGE_CONN = az storage account show-connection-string `
   --name $STORAGE_ACCOUNT `
   --resource-group "rg-calmvault-$SUFFIX" `
@@ -149,23 +149,23 @@ COSMOS_DATABASE_NAME=calmvault
 
 ### 1.4 Configure the Backend
 
-Create the `.env` file and paste the output from step 1.3:
+Create the `.env` file and paste the output from Activity 1.3:
 
 **Bash:**
 
 ```bash
-cd step-1/backend
+cd activity-1/backend
 cp .env.example .env
 ```
 
 **PowerShell:**
 
 ```powershell
-Set-Location step-1/backend
+Set-Location activity-1/backend
 Copy-Item .env.example .env
 ```
 
-Open `step-1/backend/.env` in your editor and replace its contents with the output you copied from step 1.3 (everything between the `────────` lines).
+Open `activity-1/backend/.env` in your editor and replace its contents with the output you copied from Activity 1.3 (everything between the `────────` lines).
 
 > **Tip:** The `.env` file is git-ignored so your secrets won't accidentally get committed to source control.
 
@@ -174,7 +174,7 @@ Open `step-1/backend/.env` in your editor and replace its contents with the outp
 **Bash / PowerShell:**
 
 ```bash
-cd step-1/backend
+cd activity-1/backend
 npm install
 npm run dev
 ```
@@ -206,7 +206,7 @@ In a **new terminal window** (keep the backend running):
 **Bash / PowerShell:**
 
 ```bash
-cd step-1/frontend
+cd activity-1/frontend
 npm install
 npm run dev
 ```
@@ -227,7 +227,7 @@ If everything works, congratulations! Your app is running locally and storing fi
 
 ---
 
-## Step 2 — Build Container Images with ACR
+## Activity 2 — Build Container Images with ACR
 
 Now that the app works locally, let's package it into **containers** — portable, self-contained units that can run anywhere. We'll use **Azure Container Registry (ACR)** to build the containers in the cloud, so you don't need Docker installed on your machine.
 
@@ -243,14 +243,14 @@ Think of a container as a zip file that includes your app code plus everything i
 
 ### 2.1 Deploy Infrastructure (with ACR)
 
-This deploys the same resources as Step 1, plus a Container Registry:
+This deploys the same resources as Activity 1, plus a Container Registry:
 
 **Bash:**
 
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-2/infrastructure/main.bicep
+  --template-file activity-2/infrastructure/main.bicep
 ```
 
 **PowerShell:**
@@ -258,7 +258,7 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-2/infrastructure/main.bicep
+  --template-file activity-2/infrastructure/main.bicep
 ```
 
 ### 2.2 Build the Container Images Remotely
@@ -268,42 +268,42 @@ The `az acr build` command sends your source code to Azure, which builds the con
 **Bash:**
 
 ```bash
-# Use the SUFFIX saved from step 1.2
+# Use the SUFFIX saved from Activity 1.2
 ACR_NAME=calmvaultacr${SUFFIX}
 
 # Build backend container
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-backend:latest \
-  --file step-1/backend/Dockerfile \
+  --file activity-1/backend/Dockerfile \
   .
 
 # Build frontend container
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-1/frontend/Dockerfile \
+  --file activity-1/frontend/Dockerfile \
   .
 ```
 
 **PowerShell:**
 
 ```powershell
-# Use the $SUFFIX saved from step 1.2
+# Use the $SUFFIX saved from Activity 1.2
 $ACR_NAME = "calmvaultacr$SUFFIX"
 
 # Build backend container
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-backend:latest `
-  --file step-1/backend/Dockerfile `
+  --file activity-1/backend/Dockerfile `
   .
 
 # Build frontend container
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-1/frontend/Dockerfile `
+  --file activity-1/frontend/Dockerfile `
   .
 ```
 
@@ -325,7 +325,7 @@ az acr repository show-tags --name $ACR_NAME --repository calmvault-backend --ou
 
 ---
 
-## Step 3 — Deploy to Azure Container Apps
+## Activity 3 — Deploy to Azure Container Apps
 
 Now let's run those containers in the cloud! **Azure Container Apps** is a managed service that runs your containers, handles scaling (more traffic = more instances), and gives you a public URL — without managing servers.
 
@@ -340,7 +340,7 @@ Now let's run those containers in the cloud! **Azure Container Apps** is a manag
 
 ### 3.1 Deploy Backend Container App
 
-> **Prerequisite:** Container images must exist in ACR. Complete Step 2 first.
+> **Prerequisite:** Container images must exist in ACR. Complete Activity 2 first.
 
 This deploys the Log Analytics workspace, Container Apps Environment, and the backend Container App:
 
@@ -349,7 +349,7 @@ This deploys the Log Analytics workspace, Container Apps Environment, and the ba
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/backend.main.bicep
+  --template-file activity-3/infrastructure/backend.main.bicep
 ```
 
 **PowerShell:**
@@ -357,10 +357,10 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/backend.main.bicep
+  --template-file activity-3/infrastructure/backend.main.bicep
 ```
 
-> **Tip:** This step takes 3–5 minutes because it creates the Container Apps Environment and wires up secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
+> **Tip:** This activity takes 3–5 minutes because it creates the Container Apps Environment and wires up secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
 
 ### 3.2 Save Backend Deployment Outputs
 
@@ -389,13 +389,13 @@ The frontend needs to know where the backend lives. Rebuild the frontend contain
 **Bash:**
 
 ```bash
-# Use the SUFFIX saved from step 1.2
+# Use the SUFFIX saved from Activity 1.2
 ACR_NAME=calmvaultacr${SUFFIX}
 
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-1/frontend/Dockerfile \
+  --file activity-1/frontend/Dockerfile \
   --build-arg VITE_API_BASE_URL=$BACKEND_URL \
   .
 ```
@@ -403,13 +403,13 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-# Use the $SUFFIX saved from step 1.2
+# Use the $SUFFIX saved from Activity 1.2
 $ACR_NAME = "calmvaultacr$SUFFIX"
 
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-1/frontend/Dockerfile `
+  --file activity-1/frontend/Dockerfile `
   --build-arg "VITE_API_BASE_URL=$BACKEND_URL" `
   .
 ```
@@ -423,7 +423,7 @@ Now deploy the frontend Container App with the updated image:
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-3/infrastructure/frontend.main.bicep
+  --template-file activity-3/infrastructure/frontend.main.bicep
 ```
 
 **PowerShell:**
@@ -431,7 +431,7 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-3/infrastructure/frontend.main.bicep
+  --template-file activity-3/infrastructure/frontend.main.bicep
 ```
 
 Save the frontend URL:
@@ -482,7 +482,7 @@ Congratulations — CalmVault is now running in the cloud! 🚀
 
 ## What's Next
 
-Future steps will cover:
+Future activities will cover:
 
-- **Step 4** — Add CI/CD with GitHub Actions
-- **Step 5** — Add monitoring and observability
+- **Activity 4** — Add CI/CD with GitHub Actions
+- **Activity 5** — Add monitoring and observability

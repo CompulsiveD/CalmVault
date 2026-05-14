@@ -1,6 +1,6 @@
-# Step 2 — Azure Container Registry & Cloud Build
+# Activity 2 — Azure Container Registry & Cloud Build
 
-This step adds an Azure Container Registry (ACR) and builds two container images using `az acr build` — no local Docker installation required.
+This activity adds an Azure Container Registry (ACR) and builds two container images using `az acr build` — no local Docker installation required.
 
 ## Key Concepts
 
@@ -14,7 +14,7 @@ This step adds an Azure Container Registry (ACR) and builds two container images
 ## What's New
 
 - **Bicep**: ACR resource added to `infrastructure/resources.bicep`
-- **Dockerfiles**: Located in `step-1/backend/Dockerfile` and `step-1/frontend/Dockerfile` (defined alongside source code)
+- **Dockerfiles**: Located in `activity-1/backend/Dockerfile` and `activity-1/frontend/Dockerfile` (defined alongside source code)
 - **nginx.conf**: Serves the SPA with API proxy pass-through
 - **Build**: Uses `az acr build` to build remotely on Azure
 
@@ -29,7 +29,7 @@ From the repository root:
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-2/infrastructure/main.bicep
+  --template-file activity-2/infrastructure/main.bicep
 ```
 
 **PowerShell:**
@@ -37,58 +37,58 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-2/infrastructure/main.bicep
+  --template-file activity-2/infrastructure/main.bicep
 ```
 
-> **Tip:** This deploys all Step 1 resources plus the new Container Registry. Existing resources won't be recreated — Bicep is smart enough to skip unchanged resources.
+> **Tip:** This deploys all Activity 1 resources plus the new Container Registry. Existing resources won't be recreated — Bicep is smart enough to skip unchanged resources.
 
 ### 2.2 Build the Container Images
 
-No Docker required — `az acr build` sends the source to ACR and builds in the cloud. Use the `SUFFIX` saved from Step 1.2:
+No Docker required — `az acr build` sends the source to ACR and builds in the cloud. Use the `SUFFIX` saved from Activity 1.2:
 
 **Bash:**
 
 ```bash
-# Use the SUFFIX saved from step 1
+# Use the SUFFIX saved from Activity 1
 ACR_NAME=calmvaultacr${SUFFIX}
 
 # Build backend image (takes ~1-2 minutes)
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-backend:latest \
-  --file step-1/backend/Dockerfile \
+  --file activity-1/backend/Dockerfile \
   .
 
 # Build frontend image (takes ~1-3 minutes)
 az acr build \
   --registry $ACR_NAME \
   --image calmvault-frontend:latest \
-  --file step-1/frontend/Dockerfile \
+  --file activity-1/frontend/Dockerfile \
   .
 ```
 
 **PowerShell:**
 
 ```powershell
-# Use the $SUFFIX saved from step 1
+# Use the $SUFFIX saved from Activity 1
 $ACR_NAME = "calmvaultacr$SUFFIX"
 
 # Build backend image (takes ~1-2 minutes)
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-backend:latest `
-  --file step-1/backend/Dockerfile `
+  --file activity-1/backend/Dockerfile `
   .
 
 # Build frontend image (takes ~1-3 minutes)
 az acr build `
   --registry $ACR_NAME `
   --image calmvault-frontend:latest `
-  --file step-1/frontend/Dockerfile `
+  --file activity-1/frontend/Dockerfile `
   .
 ```
 
-> **Note:** The build context is the repository root (`.`) because the Dockerfiles reference `step-1/` paths. Make sure you run these commands from the root of the repo, not from inside the `step-2/` folder.
+> **Note:** The build context is the repository root (`.`) because the Dockerfiles reference `activity-1/` paths. Make sure you run these commands from the root of the repo, not from inside the `activity-2/` folder.
 
 ### 2.3 Verify the Images
 

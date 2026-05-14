@@ -2,19 +2,19 @@
 
 ## Repository Structure
 
-CalmVault is organized as a **step-by-step deployment lab**. Each `step-N/` folder is an incremental addition containing only new or modified files for that stage.
+CalmVault is organized as a **hands-on deployment lab**. Each `activity-N/` folder is an incremental addition containing only new or modified files for that stage.
 
 ```
-step-1/          ← Deploy infrastructure + run locally
+activity-1/          ← Deploy infrastructure + run locally
   backend/       ← Express + TypeScript REST API
     Dockerfile   ← Backend API container (node:20-alpine)
   frontend/      ← Vue 3 + TypeScript SPA (Vite)
     Dockerfile   ← Frontend SPA container (nginx:alpine → port 8080)
   infrastructure/← Bicep templates for Azure
-step-2/          ← Add ACR + build container images (no local Docker)
+activity-2/          ← Add ACR + build container images (no local Docker)
   infrastructure/← Bicep with ACR added
   nginx.conf     ← nginx config for SPA routing + API proxy
-step-3/          ← Deploy to Azure Container Apps
+activity-3/          ← Deploy to Azure Container Apps
   infrastructure/← Split Bicep: backend.main.bicep + frontend.main.bicep
 ```
 
@@ -22,10 +22,10 @@ The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
 
 ## Architecture
 
-- **`step-1/backend/`** — Express + TypeScript REST API (Node.js). Handles file uploads, metadata CRUD, and proxies Azure services. Runs on port 3001.
-- **`step-1/frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
-- **`step-1/infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
-- **`step-3/infrastructure/`** — Split into `backend.main.bicep` (deploys Log Analytics, Container Apps Environment, backend app) and `frontend.main.bicep` (deploys frontend app). Backend is deployed first so its URL can be passed to the frontend image build.
+- **`activity-1/backend/`** — Express + TypeScript REST API (Node.js). Handles file uploads, metadata CRUD, and proxies Azure services. Runs on port 3001.
+- **`activity-1/frontend/`** — Vue 3 + TypeScript SPA (Vite). Communicates with the backend via `fetch` calls in `src/services/api.ts`. Runs on port 5173.
+- **`activity-1/infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
+- **`activity-3/infrastructure/`** — Split into `backend.main.bicep` (deploys Log Analytics, Container Apps Environment, backend app) and `frontend.main.bicep` (deploys frontend app). Backend is deployed first so its URL can be passed to the frontend image build.
 
 Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB** (serverless). There is no authentication (MVP).
 
@@ -39,14 +39,14 @@ Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Az
 ### Key types
 
 The `FileMetadata` interface is the central data model, defined in both:
-- `step-1/backend/src/models/file.ts`
-- `step-1/frontend/src/types/file.ts`
+- `activity-1/backend/src/models/file.ts`
+- `activity-1/frontend/src/types/file.ts`
 
 These must stay in sync manually. If you add a field to one, add it to the other.
 
 ## Build & Run Commands
 
-### Backend (`cd step-1/backend`)
+### Backend (`cd activity-1/backend`)
 
 | Command            | Description                        |
 | ------------------ | ---------------------------------- |
@@ -55,7 +55,7 @@ These must stay in sync manually. If you add a field to one, add it to the other
 | `npm run start`    | Run compiled output                |
 | `npm run typecheck`| Type-check without emitting        |
 
-### Frontend (`cd step-1/frontend`)
+### Frontend (`cd activity-1/frontend`)
 
 | Command            | Description                        |
 | ------------------ | ---------------------------------- |
@@ -63,10 +63,10 @@ These must stay in sync manually. If you add a field to one, add it to the other
 | `npm run build`    | Type-check + production build      |
 | `npm run preview`  | Preview production build           |
 
-### Infrastructure (`cd step-1/infrastructure`)
+### Infrastructure (`cd activity-1/infrastructure`)
 
 ```bash
-az deployment sub create --location centralus --template-file step-1/infrastructure/main.bicep
+az deployment sub create --location centralus --template-file activity-1/infrastructure/main.bicep
 ```
 
 All resource names follow the pattern `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts, which disallow hyphens). The suffix defaults to a 4-character hash derived from the subscription ID.
@@ -83,11 +83,11 @@ Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource
 | Cosmos DB Account | `Microsoft.DocumentDB/databaseAccounts` | `calmvault-cosmos-<suffix>` | Serverless mode, Session consistency, local auth enabled |
 | Cosmos DB Database | `databaseAccounts/sqlDatabases` | `calmvault` | SQL API |
 | Cosmos DB Container | `sqlDatabases/containers` | `files` | Partition key: `/id` |
-| Container Registry | `Microsoft.ContainerRegistry/registries` | `calmvaultacr<suffix>` | Basic SKU, admin user enabled (added in step-2) |
-| Log Analytics | `Microsoft.OperationalInsights/workspaces` | `calmvault-logs-<suffix>` | 30-day retention (added in step-3) |
-| Container Apps Env | `Microsoft.App/managedEnvironments` | `calmvault-env-<suffix>` | Linked to Log Analytics (added in step-3) |
-| Backend Container App | `Microsoft.App/containerApps` | `calmvault-backend-<suffix>` | Port 3001, external ingress, 0–3 replicas (added in step-3) |
-| Frontend Container App | `Microsoft.App/containerApps` | `calmvault-frontend-<suffix>` | Port 8080, external ingress, 0–3 replicas (added in step-3) |
+| Container Registry | `Microsoft.ContainerRegistry/registries` | `calmvaultacr<suffix>` | Basic SKU, admin user enabled (added in activity-2) |
+| Log Analytics | `Microsoft.OperationalInsights/workspaces` | `calmvault-logs-<suffix>` | 30-day retention (added in activity-3) |
+| Container Apps Env | `Microsoft.App/managedEnvironments` | `calmvault-env-<suffix>` | Linked to Log Analytics (added in activity-3) |
+| Backend Container App | `Microsoft.App/containerApps` | `calmvault-backend-<suffix>` | Port 3001, external ingress, 0–3 replicas (added in activity-3) |
+| Frontend Container App | `Microsoft.App/containerApps` | `calmvault-frontend-<suffix>` | Port 8080, external ingress, 0–3 replicas (added in activity-3) |
 
 ### Environment
 
@@ -128,9 +128,9 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 ### Lab authoring
 
 - **Target audience**: 100–200 level developers. Assume familiarity with basic CLI usage and web development concepts, but do NOT assume knowledge of Azure services, Bicep, Docker, or infrastructure-as-code. Explain "why" alongside "what" for Azure-specific concepts.
-- Each step folder (`step-N/`) is an **incremental addition** — it contains only new or modified files for that stage. Earlier steps remain unchanged.
-- The root `DEPLOYMENT_GUIDE.md` provides the lab walkthrough. Keep it in sync when adding new steps.
-- Dockerfiles live alongside their source code (`step-1/backend/Dockerfile`, `step-1/frontend/Dockerfile`) but the build context is the repo root.
+- Each activity folder (`activity-N/`) is an **incremental addition** — it contains only new or modified files for that stage. Earlier activities remain unchanged.
+- The root `DEPLOYMENT_GUIDE.md` provides the lab walkthrough. Keep it in sync when adding new activities.
+- Dockerfiles live alongside their source code (`activity-1/backend/Dockerfile`, `activity-1/frontend/Dockerfile`) but the build context is the repo root.
 - **Dual-platform commands**: All CLI command blocks in READMEs and the deployment guide must include both Bash and PowerShell equivalents. Use **Bash:** / **PowerShell:** labels before each block. For commands identical in both shells, use a single block labeled **Bash / PowerShell:**.
 - **Documentation tone**: Brief explanatory notes after commands (what just happened, what to expect). Include expected output where helpful. Add "> **Tip:**" callouts for common pitfalls.
 - Minimal, calm design language applies to documentation as well — clear headings, short paragraphs, no clutter.
@@ -139,5 +139,5 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
 - Minimal, calm, iCloud-inspired UI — lots of whitespace, soft colors (accent: `#5ba4cf`)
 - Tag-based organization only (no folder hierarchy)
-- Upload limit: 50 MB per file (enforced by multer in `step-1/backend/src/middleware/upload.ts`)
+- Upload limit: 50 MB per file (enforced by multer in `activity-1/backend/src/middleware/upload.ts`)
 - Responsive: sidebar collapses to a slide-in menu on mobile (≤768px)

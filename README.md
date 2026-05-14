@@ -10,15 +10,15 @@ By the end of this lab, you'll have deployed a full-stack web application to the
 
 ## Lab Structure
 
-Each step builds incrementally on the previous one:
+Each activity builds incrementally on the previous one:
 
-| Step | What you'll do | What you'll learn |
+| Activity | What you'll do | What you'll learn |
 | --- | --- | --- |
-| `step-1/` | Deploy Azure resources and run the app locally | Bicep (infrastructure-as-code), Azure Storage, Cosmos DB |
-| `step-2/` | Build container images in the cloud | Docker concepts, Azure Container Registry, `az acr build` |
-| `step-3/` | Deploy containers to Azure Container Apps | Managed container hosting, auto-scaling, secrets management |
+| `activity-1/` | Deploy Azure resources and run the app locally | Bicep (infrastructure-as-code), Azure Storage, Cosmos DB |
+| `activity-2/` | Build container images in the cloud | Docker concepts, Azure Container Registry, `az acr build` |
+| `activity-3/` | Deploy containers to Azure Container Apps | Managed container hosting, auto-scaling, secrets management |
 
-👉 **Start here:** [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) — the full step-by-step walkthrough.
+👉 **Start here:** [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) — the full guided walkthrough.
 
 ## Architecture
 
@@ -31,14 +31,14 @@ Each step builds incrementally on the previous one:
 
 ```bash
 # Deploy infrastructure (creates Azure resources)
-az deployment sub create --location centralus --template-file step-1/infrastructure/main.bicep
+az deployment sub create --location centralus --template-file activity-1/infrastructure/main.bicep
 
 # Backend (in one terminal)
-cd step-1/backend && cp .env.example .env  # fill in credentials from Azure
+cd activity-1/backend && cp .env.example .env  # fill in credentials from Azure
 npm install && npm run dev
 
 # Frontend (in another terminal)
-cd step-1/frontend
+cd activity-1/frontend
 npm install && npm run dev
 ```
 

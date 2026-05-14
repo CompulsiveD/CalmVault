@@ -25,7 +25,7 @@ From the repository root:
 ```bash
 az deployment sub create \
   --location centralus \
-  --template-file step-1/infrastructure/main.bicep
+  --template-file activity-1/infrastructure/main.bicep
 ```
 
 **PowerShell:**
@@ -33,12 +33,12 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location centralus `
-  --template-file step-1/infrastructure/main.bicep
+  --template-file activity-1/infrastructure/main.bicep
 ```
 
 > **Tip:** This takes 2–5 minutes. When it finishes, you'll see a JSON output with the deployment results.
 
-The deployment outputs a `suffix` value. Save it — all resource names use this suffix and it's required for subsequent steps.
+The deployment outputs a `suffix` value. Save it — all resource names use this suffix and it's required for subsequent activities.
 
 To specify a custom suffix or region (optional — most people should skip this):
 
@@ -47,7 +47,7 @@ To specify a custom suffix or region (optional — most people should skip this)
 ```bash
 az deployment sub create \
   --location westus2 \
-  --template-file step-1/infrastructure/main.bicep \
+  --template-file activity-1/infrastructure/main.bicep \
   --parameters location=westus2 suffix=ab12
 ```
 
@@ -56,10 +56,10 @@ az deployment sub create \
 ```powershell
 az deployment sub create `
   --location westus2 `
-  --template-file step-1/infrastructure/main.bicep `
+  --template-file activity-1/infrastructure/main.bicep `
   --parameters location=westus2 suffix=ab12
 ```
 
 ## After Deployment
 
-Save the deployment outputs (see `DEPLOYMENT_GUIDE.md` step 1.2), then run step 1.3 which retrieves secrets and prints a complete `.env` file ready to copy into `step-1/backend/.env`.
+Save the deployment outputs (see `DEPLOYMENT_GUIDE.md` Activity 1.2), then run Activity 1.3 which retrieves secrets and prints a complete `.env` file ready to copy into `activity-1/backend/.env`.
