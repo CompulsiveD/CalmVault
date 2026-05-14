@@ -480,9 +480,84 @@ Congratulations — CalmVault is now running in the cloud! 🚀
 
 ---
 
+## Activity 4 — Monitoring & Observability
+
+Now that your app is running, let's add visibility into what's happening. You'll configure **diagnostic settings** so that Azure resources send their logs and metrics to the Log Analytics workspace created in Activity 3.
+
+### What you'll configure
+
+| Resource | What gets logged |
+| --- | --- |
+| **Azure Blob Storage** | Every read, write, and delete operation on your files |
+| **Azure Cosmos DB** | Database queries, request statistics, partition usage |
+| **Azure Container Registry** | Image push/pull events, login attempts |
+
+### 4.1 Deploy Diagnostic Settings
+
+**Bash:**
+
+```bash
+az deployment sub create \
+  --location centralus \
+  --template-file activity-4/infrastructure/main.bicep
+```
+
+**PowerShell:**
+
+```powershell
+az deployment sub create `
+  --location centralus `
+  --template-file activity-4/infrastructure/main.bicep
+```
+
+> **Tip:** This takes about 1–2 minutes. It wires existing resources to send logs to the Log Analytics workspace — no new resources are created.
+
+### 4.2 Verify Diagnostic Settings
+
+Open the Azure Portal and check that diagnostic settings are configured:
+
+1. Navigate to your resource group (`rg-calmvault-<suffix>`)
+2. Click on the **Storage Account** → **Diagnostic settings** (under Monitoring)
+3. Confirm a setting named `calmvault<suffix>-blob-diag` exists and targets the Log Analytics workspace
+4. Repeat for **Cosmos DB** and **Container Registry**
+
+### 4.3 Generate Traffic & Query Logs
+
+Upload and download a few files to generate log data, then query:
+
+**Bash:**
+
+```bash
+WORKSPACE_ID=$(az monitor log-analytics workspace show \
+  --resource-group rg-calmvault-$SUFFIX \
+  --workspace-name calmvault-logs-$SUFFIX \
+  --query customerId -o tsv)
+
+az monitor log-analytics query \
+  --workspace $WORKSPACE_ID \
+  --analytics-query "StorageBlobLogs | summarize count() by OperationName | top 5 by count_"
+```
+
+**PowerShell:**
+
+```powershell
+$WORKSPACE_ID = az monitor log-analytics workspace show `
+  --resource-group "rg-calmvault-$SUFFIX" `
+  --workspace-name "calmvault-logs-$SUFFIX" `
+  --query customerId -o tsv
+
+az monitor log-analytics query `
+  --workspace $WORKSPACE_ID `
+  --analytics-query "StorageBlobLogs | summarize count() by OperationName | top 5 by count_"
+```
+
+> **Tip:** Logs may take 5–10 minutes to appear after the first activity. Be patient — if the query returns no results, wait a few minutes and try again.
+
+---
+
 ## What's Next
 
 Future activities will cover:
 
-- **Activity 4** — Add CI/CD with GitHub Actions
-- **Activity 5** — Add monitoring and observability
+- **Activity 5** — Add alerting and dashboards
+- **Activity 6** — Add CI/CD with GitHub Actions
