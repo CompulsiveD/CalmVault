@@ -1,3 +1,15 @@
+import appInsights from "applicationinsights";
+
+if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+  appInsights
+    .setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
+    .setAutoCollectRequests(true)
+    .setAutoCollectDependencies(true)
+    .setAutoCollectExceptions(true)
+    .setAutoCollectPerformance(true, true)
+    .start();
+}
+
 import express from "express";
 import cors from "cors";
 import { config } from "./config";

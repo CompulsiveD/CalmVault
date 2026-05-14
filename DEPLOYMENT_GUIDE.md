@@ -554,6 +554,62 @@ az monitor log-analytics query `
 
 > **Tip:** Logs may take 5–10 minutes to appear after the first activity. Be patient — if the query returns no results, wait a few minutes and try again.
 
+### 4.4 Enable Application Insights on the Backend
+
+Application Insights provides automatic request/dependency tracking for the Express API.
+
+**Bash:**
+
+```bash
+# Get the App Insights connection string from the deployment outputs
+APPINSIGHTS_CONN=$(az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv)
+
+echo "APPINSIGHTS_CONN: $APPINSIGHTS_CONN"
+```
+
+**PowerShell:**
+
+```powershell
+$APPINSIGHTS_CONN = az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv
+
+Write-Output "APPINSIGHTS_CONN: $APPINSIGHTS_CONN"
+```
+
+Add this to your `activity-1/backend/.env` file:
+
+```
+APPLICATIONINSIGHTS_CONNECTION_STRING=<value from above>
+```
+
+Then redeploy the backend container with the new environment variable:
+
+**Bash:**
+
+```bash
+az containerapp update \
+  --name calmvault-backend-$SUFFIX \
+  --resource-group rg-calmvault-$SUFFIX \
+  --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
+```
+
+**PowerShell:**
+
+```powershell
+az containerapp update `
+  --name "calmvault-backend-$SUFFIX" `
+  --resource-group "rg-calmvault-$SUFFIX" `
+  --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
+```
+
+> **What just happened?** The backend now sends telemetry (requests, dependencies, exceptions) to Application Insights. You can view it in the Azure Portal under the Application Insights resource → Live Metrics or Transaction Search.
+
+### 4.5 Verify Application Insights
+
+1. Generate some traffic (upload/download files via the frontend)
+2. In the Azure Portal, open **Application Insights** (`calmvault-insights-<suffix>`)
+3. Click **Live Metrics** to see requests flowing in real-time
+4. Click **Transaction search** to view individual requests with timing and dependencies
+
 ---
 
 ## What's Next

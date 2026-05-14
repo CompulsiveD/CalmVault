@@ -21,6 +21,9 @@ This activity adds monitoring and observability to CalmVault by wiring existing 
   - Cosmos DB Total Requests — request volume over 4 hours
   - Cosmos DB Requests by Status Code — grouped by HTTP status over 4 hours
   - Storage Availability — percentage availability over 24 hours
+- **Application Insights** — App-level telemetry linked to Log Analytics
+  - Auto-collects: incoming requests, outgoing dependencies (Cosmos, Blob), exceptions, performance counters
+  - Backend instrumented via `applicationinsights` npm package in `activity-1/backend/src/index.ts`
 
 ## Deploy
 

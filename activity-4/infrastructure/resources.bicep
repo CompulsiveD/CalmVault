@@ -14,6 +14,7 @@ var cosmosAccountName = '${projectName}-cosmos-${suffix}'
 var acrName = '${projectName}acr${suffix}'
 var backendAppName = '${projectName}-backend-${suffix}'
 var dashboardName = '${projectName}-dashboard-${suffix}'
+var appInsightsName = '${projectName}-insights-${suffix}'
 
 // ── Existing Resources ─────────────────────────────────────
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' existing = {
@@ -35,6 +36,18 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-12-01-preview
 
 resource acr 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' existing = {
   name: acrName
+}
+
+// ── Application Insights ───────────────────────────────────
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: appInsightsName
+  location: location
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+    RetentionInDays: 30
+  }
 }
 
 // ── Diagnostic Settings: Storage Account (Blob) ────────────
@@ -521,3 +534,5 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
 // ── Outputs ────────────────────────────────────────────────
 output logAnalyticsName string = logAnalytics.name
 output dashboardName string = dashboard.name
+output appInsightsName string = appInsights.name
+output appInsightsConnectionString string = appInsights.properties.ConnectionString
