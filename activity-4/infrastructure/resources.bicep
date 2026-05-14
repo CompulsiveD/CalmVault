@@ -132,13 +132,96 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 0, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/HubsExtension/PartType/MarkdownPart'
-              inputs: []
+              inputs: [
+                {
+                  name: 'sharedTimeRange'
+                  isOptional: true
+                }
+                {
+                  name: 'options'
+                  value: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: storageAccount.id
+                          }
+                          name: 'Transactions'
+                          aggregationType: 1
+                          namespace: 'microsoft.storage/storageaccounts'
+                          metricVisualization: {
+                            displayName: 'Transactions'
+                          }
+                        }
+                      ]
+                      title: 'Storage Transactions'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                      }
+                      grouping: {
+                        dimension: 'ApiName'
+                        top: 10
+                      }
+                      timespan: {
+                        relative: { duration: 86400000 }
+                        showUTCTime: false
+                        grain: 1
+                      }
+                    }
+                  }
+                  isOptional: true
+                }
+              ]
+              #disable-next-line BCP036
+              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {
                 content: {
-                  content: '## 📤 File Uploads\n\nRun this query in Log Analytics to see upload activity:\n\n```kql\nStorageBlobLogs\n| where OperationName startswith "Put"\n| summarize Uploads=count() by bin(TimeGenerated, 1h)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
-                  title: 'File Uploads (hourly)'
-                  subtitle: 'StorageBlobLogs — Put operations'
+                  options: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: storageAccount.id
+                          }
+                          name: 'Transactions'
+                          aggregationType: 1
+                          namespace: 'microsoft.storage/storageaccounts'
+                          metricVisualization: {
+                            displayName: 'Transactions'
+                          }
+                        }
+                      ]
+                      title: 'Storage Transactions'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                        disablePinning: true
+                      }
+                      grouping: {
+                        dimension: 'ApiName'
+                        top: 10
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -146,13 +229,88 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 6, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/HubsExtension/PartType/MarkdownPart'
-              inputs: []
+              inputs: [
+                {
+                  name: 'sharedTimeRange'
+                  isOptional: true
+                }
+                {
+                  name: 'options'
+                  value: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: cosmosAccount.id
+                          }
+                          name: 'TotalRequests'
+                          aggregationType: 7
+                          namespace: 'microsoft.documentdb/databaseaccounts'
+                          metricVisualization: {
+                            displayName: 'Total Requests'
+                          }
+                        }
+                      ]
+                      title: 'Cosmos DB — Total Requests'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                      }
+                      timespan: {
+                        relative: { duration: 14400000 }
+                        showUTCTime: false
+                        grain: 1
+                      }
+                    }
+                  }
+                  isOptional: true
+                }
+              ]
+              #disable-next-line BCP036
+              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {
                 content: {
-                  content: '## 📥 File Downloads\n\nRun this query in Log Analytics to see download activity:\n\n```kql\nStorageBlobLogs\n| where OperationName startswith "Get"\n| summarize Downloads=count() by bin(TimeGenerated, 1h)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
-                  title: 'File Downloads (hourly)'
-                  subtitle: 'StorageBlobLogs — Get operations'
+                  options: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: cosmosAccount.id
+                          }
+                          name: 'TotalRequests'
+                          aggregationType: 7
+                          namespace: 'microsoft.documentdb/databaseaccounts'
+                          metricVisualization: {
+                            displayName: 'Total Requests'
+                          }
+                        }
+                      ]
+                      title: 'Cosmos DB — Total Requests'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                        disablePinning: true
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -160,13 +318,96 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 0, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/HubsExtension/PartType/MarkdownPart'
-              inputs: []
+              inputs: [
+                {
+                  name: 'sharedTimeRange'
+                  isOptional: true
+                }
+                {
+                  name: 'options'
+                  value: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: cosmosAccount.id
+                          }
+                          name: 'TotalRequests'
+                          aggregationType: 7
+                          namespace: 'microsoft.documentdb/databaseaccounts'
+                          metricVisualization: {
+                            displayName: 'Total Requests'
+                          }
+                        }
+                      ]
+                      title: 'Cosmos DB — Requests by Status Code'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                      }
+                      grouping: {
+                        dimension: 'StatusCode'
+                        top: 50
+                      }
+                      timespan: {
+                        relative: { duration: 14400000 }
+                        showUTCTime: false
+                        grain: 1
+                      }
+                    }
+                  }
+                  isOptional: true
+                }
+              ]
+              #disable-next-line BCP036
+              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {
                 content: {
-                  content: '## 🗄️ Cosmos DB Requests\n\nRun this query in Log Analytics to see database activity:\n\n```kql\nCDBDataPlaneRequests\n| summarize RequestCount=count() by bin(TimeGenerated, 5m)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
-                  title: 'Cosmos DB Requests (5-min)'
-                  subtitle: 'CDBDataPlaneRequests'
+                  options: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: cosmosAccount.id
+                          }
+                          name: 'TotalRequests'
+                          aggregationType: 7
+                          namespace: 'microsoft.documentdb/databaseaccounts'
+                          metricVisualization: {
+                            displayName: 'Total Requests'
+                          }
+                        }
+                      ]
+                      title: 'Cosmos DB — Requests by Status Code'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                        disablePinning: true
+                      }
+                      grouping: {
+                        dimension: 'StatusCode'
+                        top: 50
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -174,13 +415,88 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 6, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/HubsExtension/PartType/MarkdownPart'
-              inputs: []
+              inputs: [
+                {
+                  name: 'sharedTimeRange'
+                  isOptional: true
+                }
+                {
+                  name: 'options'
+                  value: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: storageAccount.id
+                          }
+                          name: 'Availability'
+                          aggregationType: 4
+                          namespace: 'microsoft.storage/storageaccounts'
+                          metricVisualization: {
+                            displayName: 'Availability'
+                          }
+                        }
+                      ]
+                      title: 'Storage Availability'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                      }
+                      timespan: {
+                        relative: { duration: 86400000 }
+                        showUTCTime: false
+                        grain: 1
+                      }
+                    }
+                  }
+                  isOptional: true
+                }
+              ]
+              #disable-next-line BCP036
+              type: 'Extension/HubsExtension/PartType/MonitorChartPart'
               settings: {
                 content: {
-                  content: '## ⚠️ Cosmos DB Errors\n\nRun this query in Log Analytics to see database errors:\n\n```kql\nCDBDataPlaneRequests\n| where StatusCode >= 400\n| summarize Errors=count() by bin(TimeGenerated, 5m)\n| render timechart\n```\n\n**Workspace:** ${logAnalyticsName}'
-                  title: 'Cosmos DB Errors (5-min)'
-                  subtitle: 'CDBDataPlaneRequests — Status >= 400'
+                  options: {
+                    chart: {
+                      metrics: [
+                        {
+                          resourceMetadata: {
+                            id: storageAccount.id
+                          }
+                          name: 'Availability'
+                          aggregationType: 4
+                          namespace: 'microsoft.storage/storageaccounts'
+                          metricVisualization: {
+                            displayName: 'Availability'
+                          }
+                        }
+                      ]
+                      title: 'Storage Availability'
+                      titleKind: 2
+                      visualization: {
+                        chartType: 2
+                        legendVisualization: {
+                          isVisible: true
+                          position: 2
+                          hideSubtitle: false
+                        }
+                        axisVisualization: {
+                          x: { isVisible: true, axisType: 2 }
+                          y: { isVisible: true, axisType: 1 }
+                        }
+                        disablePinning: true
+                      }
+                    }
+                  }
                 }
               }
             }

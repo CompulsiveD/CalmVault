@@ -94,7 +94,7 @@ Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource
 | Diagnostic Setting (Storage Blob) | `Microsoft.Insights/diagnosticSettings` | `calmvault<suffix>-blob-diag` | Blob read/write/delete logs + transaction metrics (added in activity-4) |
 | Diagnostic Setting (Cosmos DB) | `Microsoft.Insights/diagnosticSettings` | `calmvault-cosmos-<suffix>-diag` | Data plane requests, query stats, partition key stats (added in activity-4) |
 | Diagnostic Setting (ACR) | `Microsoft.Insights/diagnosticSettings` | `calmvaultacr<suffix>-diag` | Repository events, login events + all metrics (added in activity-4) |
-| Azure Dashboard | `Microsoft.Portal/dashboards` | `calmvault-dashboard-<suffix>` | 4 panels: uploads, downloads, Cosmos requests, Cosmos errors (added in activity-4) |
+| Azure Dashboard | `Microsoft.Portal/dashboards` | `calmvault-dashboard-<suffix>` | 4 metric chart panels: storage transactions, Cosmos requests, Cosmos by status, storage availability (added in activity-4) |
 
 ### Environment
 

@@ -16,11 +16,11 @@ This activity adds monitoring and observability to CalmVault by wiring existing 
   - **Storage Account (Blob)** — read/write/delete operations + transaction metrics
   - **Cosmos DB** — data plane requests, query runtime statistics, partition key stats + request metrics
   - **Container Registry** — repository events, login events + all metrics
-- **Azure Dashboard** — A portal dashboard with 4 KQL-powered panels:
-  - File Uploads (hourly) — blob Put operations over 24 hours
-  - File Downloads (hourly) — blob Get operations over 24 hours
-  - Cosmos DB Requests (5-min) — total request volume
-  - Cosmos DB Errors (5-min) — requests with status code ≥ 400
+- **Azure Dashboard** — A portal dashboard with 4 metric chart panels:
+  - Storage Transactions — grouped by API name (Put, Get, Delete, etc.) over 24 hours
+  - Cosmos DB Total Requests — request volume over 4 hours
+  - Cosmos DB Requests by Status Code — grouped by HTTP status over 4 hours
+  - Storage Availability — percentage availability over 24 hours
 
 ## Deploy
 
@@ -72,7 +72,7 @@ az monitor log-analytics query \
 | Diagnostic Setting (Storage) | `calmvault<suffix>-blob-diag` | Blob read/write/delete logs + transaction metrics |
 | Diagnostic Setting (Cosmos DB) | `calmvault-cosmos-<suffix>-diag` | Data plane requests, query stats, partition key stats |
 | Diagnostic Setting (ACR) | `calmvaultacr<suffix>-diag` | Repository events, login events + all metrics |
-| Azure Dashboard | `calmvault-dashboard-<suffix>` | 4 panels: uploads, downloads, Cosmos requests, Cosmos errors |
+| Azure Dashboard | `calmvault-dashboard-<suffix>` | 4 panels: storage transactions, Cosmos requests, Cosmos by status, storage availability |
 
 ## Log Categories
 
