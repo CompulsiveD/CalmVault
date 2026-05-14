@@ -18,6 +18,7 @@ Each activity builds incrementally on the previous one:
 | `activity-2/` | Build container images in the cloud | Docker concepts, Azure Container Registry, `az acr build` |
 | `activity-3/` | Deploy containers to Azure Container Apps | Managed container hosting, auto-scaling, secrets management |
 | `activity-4/` | Add monitoring and observability | Diagnostic settings, Log Analytics, KQL queries |
+| `activity-5/` | AI auto-tagging with GPT-4o (optional) | Azure OpenAI, Event Grid, event-driven Container Apps |
 
 👉 **Start here:** [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md) — the full guided walkthrough.
 

@@ -18,6 +18,9 @@ activity-3/          ← Deploy to Azure Container Apps
   infrastructure/← Split Bicep: backend.main.bicep + frontend.main.bicep
 activity-4/          ← Add monitoring and observability
   infrastructure/← Diagnostic settings for Storage, Cosmos DB, ACR
+activity-5/          ← AI auto-tagging with GPT-4o (optional)
+  tagger/        ← TypeScript queue-polling app (Event Grid → GPT-4o → Cosmos)
+  infrastructure/← Azure OpenAI, Event Grid, Storage Queue, Tagger Container App
 ```
 
 The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
@@ -29,6 +32,8 @@ The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
 - **`activity-1/infrastructure/`** — Bicep templates for Azure deployment. `main.bicep` is the subscription-level entry point; `resources.bicep` is a module scoped to the resource group.
 - **`activity-3/infrastructure/`** — Split into `backend.main.bicep` (deploys Log Analytics, Container Apps Environment, backend app) and `frontend.main.bicep` (deploys frontend app). Backend is deployed first so its URL can be passed to the frontend image build.
 - **`activity-4/infrastructure/`** — Adds diagnostic settings that send logs and metrics from Storage (Blob), Cosmos DB, and Container Registry to the existing Log Analytics workspace. Also creates an Azure Dashboard with KQL-powered panels for file uploads, downloads, and Cosmos DB activity.
+- **`activity-5/tagger/`** — TypeScript Container App that polls a Storage Queue for Event Grid blob-created events, downloads the file, sends it to Azure OpenAI GPT-4o for analysis, and updates Cosmos DB with `ai:`-prefixed tags. Scales 0→3 based on queue length.
+- **`activity-5/infrastructure/`** — Deploys Azure OpenAI (GPT-4o), Event Grid system topic + subscription, Storage Queue, and the tagger Container App.
 
 Files are stored in **Azure Blob Storage**. Metadata and tags are stored in **Azure Cosmos DB** (serverless). There is no authentication (MVP).
 
@@ -96,6 +101,10 @@ Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource
 | Diagnostic Setting (ACR) | `Microsoft.Insights/diagnosticSettings` | `calmvaultacr<suffix>-diag` | Repository events, login events + all metrics (added in activity-4) |
 | Azure Dashboard | `Microsoft.Portal/dashboards` | `calmvault-dashboard-<suffix>` | 4 metric chart panels: storage transactions, Cosmos requests, Cosmos by status, storage availability (added in activity-4) |
 | Application Insights | `Microsoft.Insights/components` | `calmvault-insights-<suffix>` | App-level telemetry linked to Log Analytics, auto-collects requests/dependencies/exceptions (added in activity-4) |
+| Azure OpenAI | `Microsoft.CognitiveServices/accounts` | `calmvault-openai-<suffix>` | S0 SKU, GPT-4o model deployed with 10K TPM (added in activity-5) |
+| Storage Queue | `storageAccounts/queueServices/queues` | `blob-events` | Receives Event Grid blob-created events for tagger processing (added in activity-5) |
+| Event Grid System Topic | `Microsoft.EventGrid/systemTopics` | `calmvault-storage-events-<suffix>` | Watches Storage Account for BlobCreated events (added in activity-5) |
+| Tagger Container App | `Microsoft.App/containerApps` | `calmvault-tagger-<suffix>` | Queue-triggered, scales 0→3 based on queue length, runs GPT-4o tagging (added in activity-5) |
 
 ### Environment
 
