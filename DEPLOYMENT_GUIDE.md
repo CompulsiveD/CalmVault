@@ -484,6 +484,24 @@ Congratulations — CalmVault is now running in the cloud! 🚀
 
 Now that your app is running, let's add visibility into what's happening. You'll configure **diagnostic settings** so that Azure resources send their logs and metrics to the Log Analytics workspace created in Activity 3.
 
+### Prerequisites
+
+Register the `Microsoft.App` resource provider (required for updating Container Apps later in this activity):
+
+**Bash:**
+
+```bash
+az provider register -n Microsoft.App --wait
+```
+
+**PowerShell:**
+
+```powershell
+az provider register -n Microsoft.App --wait
+```
+
+> **Note:** This may take a minute. It only needs to be done once per subscription.
+
 ### What you'll configure
 
 | Resource | What gets logged |
@@ -564,7 +582,7 @@ Application Insights provides automatic request/dependency tracking for the Expr
 # Get the App Insights connection string from the deployment outputs
 APPINSIGHTS_CONN=$(az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv)
 
-echo "APPINSIGHTS_CONN: $APPINSIGHTS_CONN"
+echo "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
 
 **PowerShell:**
@@ -572,7 +590,7 @@ echo "APPINSIGHTS_CONN: $APPINSIGHTS_CONN"
 ```powershell
 $APPINSIGHTS_CONN = az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv
 
-Write-Output "APPINSIGHTS_CONN: $APPINSIGHTS_CONN"
+Write-Output "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
 
 Add this to your `activity-1/backend/.env` file:
