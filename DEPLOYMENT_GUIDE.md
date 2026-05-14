@@ -698,7 +698,7 @@ az deployment sub create `
 2. Confirm the **Azure OpenAI** resource (`calmvault-openai-<suffix>`) exists with a `gpt-4o` deployment
 3. Check the **Storage Account** → **Queues** — you should see a `blob-events` queue
 4. Open **Event Grid System Topics** — confirm `calmvault-storage-events-<suffix>` has a subscription
-5. Check **Container Apps** — `calmvault-tagger-<suffix>` should exist (0 replicas when idle)
+5. Check **Container App Jobs** — `calmvault-tagger-<suffix>` should exist (no active executions when idle)
 
 ### 5.5 Test Auto-Tagging
 

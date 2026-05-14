@@ -108,13 +108,42 @@ resource eventGridSub 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2024-
   }
 }
 
-// ── Tagger Container App ───────────────────────────────────
-resource taggerApp 'Microsoft.App/containerApps@2024-03-01' = {
+// ── Tagger Container App Job ───────────────────────────────
+resource taggerJob 'Microsoft.App/jobs@2024-03-01' = {
   name: taggerAppName
   location: location
   properties: {
-    managedEnvironmentId: containerAppEnv.id
+    environmentId: containerAppEnv.id
     configuration: {
+      triggerType: 'Event'
+      replicaTimeout: 300
+      replicaRetryLimit: 1
+      eventTriggerConfig: {
+        parallelism: 1
+        replicaCompletionCount: 1
+        scale: {
+          minExecutions: 0
+          maxExecutions: 5
+          pollingInterval: 30
+          rules: [
+            {
+              name: 'queue-trigger'
+              type: 'azure-queue'
+              metadata: {
+                accountName: storageAccount.name
+                queueName: blobEventsQueue.name
+                queueLength: '1'
+              }
+              auth: [
+                {
+                  secretRef: 'storage-connection-string'
+                  triggerParameter: 'connection'
+                }
+              ]
+            }
+          ]
+        }
+      }
       registries: [
         {
           server: acr.properties.loginServer
@@ -163,31 +192,11 @@ resource taggerApp 'Microsoft.App/containerApps@2024-03-01' = {
           ]
         }
       ]
-      scale: {
-        minReplicas: 0
-        maxReplicas: 3
-        rules: [
-          {
-            name: 'queue-scaling'
-            azureQueue: {
-              accountName: storageAccount.name
-              queueName: blobEventsQueue.name
-              queueLength: 5
-              auth: [
-                {
-                  secretRef: 'storage-connection-string'
-                  triggerParameter: 'connection'
-                }
-              ]
-            }
-          }
-        ]
-      }
     }
   }
 }
 
 // ── Outputs ────────────────────────────────────────────────
 output openAiEndpoint string = openAi.properties.endpoint
-output taggerAppName string = taggerApp.name
+output taggerJobName string = taggerJob.name
 output queueName string = blobEventsQueue.name

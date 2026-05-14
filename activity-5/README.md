@@ -12,18 +12,17 @@ This optional activity adds an **AI-powered auto-tagging** service that automati
                                                          │
                                                          ▼
 ┌─────────────────┐     ┌──────────────────┐     ┌───────────────┐
-│   Cosmos DB     │◀────│  Tagger App      │◀────│ Container App │
-│  (update tags)  │     │  (GPT-4o call)   │     │ (scale 0→3)  │
+│   Cosmos DB     │◀────│  Tagger Job      │◀────│Container App  │
+│  (update tags)  │     │  (GPT-4o call)   │     │  Job (KEDA)   │
 └─────────────────┘     └──────────────────┘     └───────────────┘
 ```
 
 **Flow:**
 1. A file is uploaded to the `calmvault-files` blob container
 2. Event Grid detects the `BlobCreated` event and delivers it to a Storage Queue
-3. The tagger Container App (scaled by KEDA based on queue length) picks up the message
-4. For supported file types (images & text), it downloads the blob and sends it to GPT-4o
-5. GPT-4o analyzes the content and returns descriptive tags
-6. The tagger updates the Cosmos DB document with `ai:`-prefixed tags (e.g., `ai:landscape`, `ai:receipt`)
+3. KEDA detects messages in the queue and triggers a Container App Job execution
+4. The job processes all pending messages: downloads blobs, calls GPT-4o, updates Cosmos DB
+5. The job exits when the queue is empty — no idle resources consumed
 
 ## Supported File Types
 
@@ -43,7 +42,7 @@ Unsupported file types are silently skipped.
 | Storage Queue | `storageAccounts/queueServices/queues` | `blob-events` |
 | Event Grid System Topic | `Microsoft.EventGrid/systemTopics` | `calmvault-storage-events-<suffix>` |
 | Event Grid Subscription | `systemTopics/eventSubscriptions` | `blob-created-to-queue` |
-| Tagger Container App | `Microsoft.App/containerApps` | `calmvault-tagger-<suffix>` |
+| Tagger Container App Job | `Microsoft.App/jobs` | `calmvault-tagger-<suffix>` |
 
 ## Tag Behavior
 

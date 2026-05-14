@@ -16,7 +16,6 @@ interface EventGridEvent {
   };
 }
 
-const POLL_INTERVAL_MS = 5000;
 const SUPPORTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/bmp"];
 const SUPPORTED_TEXT_TYPES = ["text/plain", "text/csv", "text/markdown", "text/html", "application/json"];
 
@@ -49,15 +48,22 @@ async function main() {
     apiVersion: "2024-10-21",
   });
 
-  console.log("CalmVault AI Tagger started. Polling queue for blob events...");
+  console.log("CalmVault AI Tagger job started. Processing queue messages...");
 
-  // Poll loop
-  while (true) {
+  // Process all available messages, then exit
+  let totalProcessed = 0;
+  let hasMessages = true;
+
+  while (hasMessages) {
     const response = await queueClient.receiveMessages({ numberOfMessages: 5, visibilityTimeout: 60 });
+
+    if (response.receivedMessageItems.length === 0) {
+      hasMessages = false;
+      break;
+    }
 
     for (const message of response.receivedMessageItems) {
       try {
-        // Event Grid wraps the event in base64
         const decoded = Buffer.from(message.messageText, "base64").toString("utf-8");
         const event: EventGridEvent = JSON.parse(decoded);
 
@@ -104,7 +110,6 @@ async function main() {
         } else {
           const doc = docs[0];
           const existingTags: string[] = doc.tags || [];
-          // Remove any old ai: tags, then add new ones
           const userTags = existingTags.filter((t: string) => !t.startsWith("ai:"));
           const updatedTags = [...userTags, ...aiTags];
           await cosmosContainer.item(doc.id, doc.id).patch([
@@ -114,16 +119,14 @@ async function main() {
         }
 
         await queueClient.deleteMessage(message.messageId, message.popReceipt);
+        totalProcessed++;
       } catch (err) {
         console.error(`Error processing message ${message.messageId}:`, err);
-        // Message will become visible again after visibilityTimeout expires
       }
     }
-
-    if (response.receivedMessageItems.length === 0) {
-      await sleep(POLL_INTERVAL_MS);
-    }
   }
+
+  console.log(`Job complete. Processed ${totalProcessed} file(s).`);
 }
 
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
@@ -132,10 +135,6 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
     chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
   return Buffer.concat(chunks);
-}
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 main().catch((err) => {

@@ -25,5 +25,5 @@ module resources 'resources.bicep' = {
 
 output suffix string = suffix
 output openAiEndpoint string = resources.outputs.openAiEndpoint
-output taggerAppName string = resources.outputs.taggerAppName
+output taggerJobName string = resources.outputs.taggerJobName
 output queueName string = resources.outputs.queueName
