@@ -3,10 +3,10 @@ ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 
 WORKDIR /app
-COPY step-1/frontend/package*.json ./
+COPY activity-1/frontend/package*.json ./
 RUN npm install -g typescript vite vue-tsc
 RUN npm ci
-COPY step-1/frontend/ ./
+COPY activity-1/frontend/ ./
 RUN npm run build
 
 FROM nginx:alpine
@@ -18,7 +18,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 
 # Copy built SPA and custom nginx config
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY step-2/nginx.conf /etc/nginx/conf.d/default.conf
+COPY activity-2/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Configure nginx to run as non-root (Container Apps best practice)
 RUN chown -R nginx:nginx /usr/share/nginx/html && \
