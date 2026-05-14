@@ -132,73 +132,117 @@ resource dashboard 'Microsoft.Portal/dashboards@2020-09-01-preview' = {
           {
             position: { x: 0, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              #disable-next-line BCP036
+              type: 'Extension/Microsoft_Azure_Monitoring_Logs/PartType/AnalyticsGridPart'
               inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
                 {
-                  name: 'Query'
+                  name: 'resource'
+                  value: logAnalytics.id
+                }
+                {
+                  name: 'query'
                   value: 'StorageBlobLogs\n| where OperationName startswith "Put"\n| summarize Uploads=count() by bin(TimeGenerated, 1h)\n| render timechart'
                 }
-                { name: 'TimeRange', value: 'PT24H' }
-                { name: 'PartTitle', value: 'File Uploads (hourly)' }
+                {
+                  name: 'timeRange'
+                  #disable-next-line BCP036
+                  value: { relative: { duration: 24, timeUnit: 1 } }
+                }
               ]
               #disable-next-line BCP036
-              settings: {}
+              settings: {
+                content: {
+                  PartTitle: 'File Uploads (hourly)'
+                  IsQueryContainTimeRange: false
+                }
+              }
             }
           }
           {
             position: { x: 6, y: 0, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              #disable-next-line BCP036
+              type: 'Extension/Microsoft_Azure_Monitoring_Logs/PartType/AnalyticsGridPart'
               inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
                 {
-                  name: 'Query'
+                  name: 'resource'
+                  value: logAnalytics.id
+                }
+                {
+                  name: 'query'
                   value: 'StorageBlobLogs\n| where OperationName startswith "Get"\n| summarize Downloads=count() by bin(TimeGenerated, 1h)\n| render timechart'
                 }
-                { name: 'TimeRange', value: 'PT24H' }
-                { name: 'PartTitle', value: 'File Downloads (hourly)' }
+                {
+                  name: 'timeRange'
+                  #disable-next-line BCP036
+                  value: { relative: { duration: 24, timeUnit: 1 } }
+                }
               ]
               #disable-next-line BCP036
-              settings: {}
+              settings: {
+                content: {
+                  PartTitle: 'File Downloads (hourly)'
+                  IsQueryContainTimeRange: false
+                }
+              }
             }
           }
           {
             position: { x: 0, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              #disable-next-line BCP036
+              type: 'Extension/Microsoft_Azure_Monitoring_Logs/PartType/AnalyticsGridPart'
               inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
                 {
-                  name: 'Query'
+                  name: 'resource'
+                  value: logAnalytics.id
+                }
+                {
+                  name: 'query'
                   value: 'CDBDataPlaneRequests\n| summarize RequestCount=count() by bin(TimeGenerated, 5m)\n| render timechart'
                 }
-                { name: 'TimeRange', value: 'PT4H' }
-                { name: 'PartTitle', value: 'Cosmos DB Requests (5-min)' }
+                {
+                  name: 'timeRange'
+                  #disable-next-line BCP036
+                  value: { relative: { duration: 4, timeUnit: 1 } }
+                }
               ]
               #disable-next-line BCP036
-              settings: {}
+              settings: {
+                content: {
+                  PartTitle: 'Cosmos DB Requests (5-min)'
+                  IsQueryContainTimeRange: false
+                }
+              }
             }
           }
           {
             position: { x: 6, y: 4, rowSpan: 4, colSpan: 6 }
             metadata: {
-              type: 'Extension/Microsoft_OperationsManagementSuite_Workspace/PartType/LogsDashboardPart'
+              #disable-next-line BCP036
+              type: 'Extension/Microsoft_Azure_Monitoring_Logs/PartType/AnalyticsGridPart'
               inputs: [
-                { name: 'resourceTypeMode', value: 'workspace' }
-                { name: 'ComponentId', value: logAnalytics.id }
                 {
-                  name: 'Query'
+                  name: 'resource'
+                  value: logAnalytics.id
+                }
+                {
+                  name: 'query'
                   value: 'CDBDataPlaneRequests\n| where StatusCode >= 400\n| summarize Errors=count() by bin(TimeGenerated, 5m)\n| render timechart'
                 }
-                { name: 'TimeRange', value: 'PT4H' }
-                { name: 'PartTitle', value: 'Cosmos DB Errors (5-min)' }
+                {
+                  name: 'timeRange'
+                  #disable-next-line BCP036
+                  value: { relative: { duration: 4, timeUnit: 1 } }
+                }
               ]
               #disable-next-line BCP036
-              settings: {}
+              settings: {
+                content: {
+                  PartTitle: 'Cosmos DB Errors (5-min)'
+                  IsQueryContainTimeRange: false
+                }
+              }
             }
           }
         ]
