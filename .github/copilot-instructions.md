@@ -109,7 +109,7 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
 - **Service layer separation**: Route handlers in `src/routes/` call service functions in `src/services/`. Routes handle HTTP concerns (status codes, request parsing); services handle business logic and Azure SDK calls.
 - **Azure SDK initialization**: `initCosmos()` and `initBlobStorage()` are called once at startup in `src/index.ts`. Service modules export getter functions (e.g., `getFilesContainer()`) that throw if called before init.
-- **Application Insights**: Instrumented at the top of `src/index.ts` (before other imports). Auto-collects HTTP requests, dependencies, exceptions, and performance counters. Enabled only when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set.
+- **Application Insights**: Instrumented at the top of `src/index.ts` using `require('applicationinsights')` inside a conditional block (before other imports). Auto-collects HTTP requests, dependencies, exceptions, and performance counters. Enabled only when `APPLICATIONINSIGHTS_CONNECTION_STRING` is set.
 - **Express route handlers** return `Promise<void>` and set response status explicitly. Do not return response objects.
 - **Error handling**: Each route wraps its body in try/catch and returns a JSON error with appropriate status code.
 - **Blob naming**: Uploaded files are stored with a UUID + original extension as the blob name (not the original filename) to avoid collisions.

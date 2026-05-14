@@ -1,6 +1,5 @@
-import appInsights from "applicationinsights";
-
 if (process.env.APPLICATIONINSIGHTS_CONNECTION_STRING) {
+  const appInsights = require("applicationinsights");
   appInsights
     .setup(process.env.APPLICATIONINSIGHTS_CONNECTION_STRING)
     .setAutoCollectRequests(true)
