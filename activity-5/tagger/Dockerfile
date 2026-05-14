@@ -2,6 +2,7 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY activity-5/tagger/package*.json ./
+RUN npm install -g typescript
 RUN npm ci
 COPY activity-5/tagger/tsconfig.json ./
 COPY activity-5/tagger/src ./src

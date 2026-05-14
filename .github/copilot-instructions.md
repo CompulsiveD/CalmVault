@@ -145,9 +145,11 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
 ### Lab authoring
 
+- **Pause for architectural tradeoffs.** When multiple valid approaches exist for a new feature (e.g., Container Apps vs Container App Jobs, polling vs event-driven, queue vs webhook), stop and present the options with pros/cons before implementing. Do not commit to an architecture without confirmation.
 - **Target audience**: 100–200 level developers. Assume familiarity with basic CLI usage and web development concepts, but do NOT assume knowledge of Azure services, Bicep, Docker, or infrastructure-as-code. Explain "why" alongside "what" for Azure-specific concepts.
 - Each activity folder (`activity-N/`) is an **incremental addition** — it contains only new or modified files for that stage. Earlier activities remain unchanged.
 - The root `DEPLOYMENT_GUIDE.md` provides the lab walkthrough. Keep it in sync when adding new activities.
+- Every infrastructure or code change must be reflected in `DEPLOYMENT_GUIDE.md`, the activity README, and `.github/copilot-instructions.md`.
 - Dockerfiles live alongside their source code (`activity-1/backend/Dockerfile`, `activity-1/frontend/Dockerfile`) but the build context is the repo root.
 - **Dual-platform commands**: All CLI command blocks in READMEs and the deployment guide must include both Bash and PowerShell equivalents. Use **Bash:** / **PowerShell:** labels before each block. For commands identical in both shells, use a single block labeled **Bash / PowerShell:**.
 - **Documentation tone**: Brief explanatory notes after commands (what just happened, what to expect). Include expected output where helpful. Add "> **Tip:**" callouts for common pitfalls.
@@ -160,9 +162,11 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 - Upload limit: 50 MB per file (enforced by multer in `activity-1/backend/src/middleware/upload.ts`)
 - Responsive: sidebar collapses to a slide-in menu on mobile (≤768px)
 
-### Lab authoring
+### Conventions
 
-- **Pause for architectural tradeoffs.** When multiple valid approaches exist for a new feature (e.g., Container Apps vs Container App Jobs, polling vs event-driven, queue vs webhook), stop and present the options with pros/cons before implementing. Do not commit to an architecture without confirmation.
-- Activities are incremental — each `activity-N/` folder contains only new or changed files for that stage.
-- Every infrastructure or code change must be reflected in `DEPLOYMENT_GUIDE.md`, the activity README, and `.github/copilot-instructions.md`.
-- Keep deployment steps copy-paste friendly (provide both Bash and PowerShell variants).
+- **Resource naming**: All Azure resources follow `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts). The suffix is a 4-char hash from the subscription ID.
+- **Commit messages**: Imperative mood, concise subject line. Include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` trailer when Copilot authored the commit.
+- **Bicep patterns**: Subscription-scope `main.bicep` references an existing resource group and delegates to a resource-group-scoped `resources.bicep` module. Use `existing` keyword for resources created in prior activities.
+- **Secrets handling**: Never output secrets in Bicep outputs. Retrieve keys via Azure CLI after deployment. Pass secrets to Container Apps via the `secrets` array with `secretRef` in env vars.
+- **TypeScript style**: Strict mode, ES2022 target, CommonJS modules. Use `tsx` for dev, `tsc` for production builds.
+- **Package management**: Use `npm ci` in Dockerfiles for reproducible builds. Use `npm install` locally.
