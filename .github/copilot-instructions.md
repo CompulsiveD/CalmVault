@@ -21,6 +21,7 @@ activity-4/          ← Add monitoring and observability
 activity-5/          ← AI auto-tagging with GPT-4o (optional)
   tagger/        ← TypeScript queue-polling app (Event Grid → GPT-4o → Cosmos)
   infrastructure/← Azure OpenAI, Event Grid, Storage Queue, Tagger Container App
+activity-6/          ← Clean up all Azure resources
 ```
 
 The root `DEPLOYMENT_GUIDE.md` is the primary walkthrough for the lab.
