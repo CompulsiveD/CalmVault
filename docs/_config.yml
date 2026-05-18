@@ -2,6 +2,9 @@ title: CalmVault Deployment Lab
 description: A hands-on guide to deploying a full-stack web application on Azure
 remote_theme: just-the-docs/just-the-docs
 
+plugins:
+  - jekyll-remote-theme
+
 url: ""
 baseurl: ""
 
