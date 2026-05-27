@@ -34,17 +34,19 @@ From the repository root:
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-4/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-4/infrastructure/main.bicep \
+  --name activity4-monitoring
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-4/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-4/infrastructure/main.bicep `
+  --name activity4-monitoring
 ```
 
 > **Tip:** This takes about 1–2 minutes. It connects to the Log Analytics workspace created in Activity 3.
@@ -52,7 +54,7 @@ az deployment sub create `
 ### 4.2 Verify
 
 1. Open the [Azure Portal](https://portal.azure.com)
-2. Navigate to your resource group (`rg-calmvault-<suffix>`)
+2. Navigate to your resource group (`rg-calmvault-<suffix>-usc`)
 3. Click on any resource (e.g., Storage Account) → **Diagnostic settings** in the left menu
 4. Confirm you see a diagnostic setting sending logs to the Log Analytics workspace
 
@@ -62,7 +64,7 @@ To query logs (after generating some traffic):
 
 ```bash
 az monitor log-analytics query \
-  --workspace $(az monitor log-analytics workspace show --resource-group rg-calmvault-$SUFFIX --workspace-name calmvault-logs-$SUFFIX --query customerId -o tsv) \
+  --workspace $(az monitor log-analytics workspace show --resource-group $RG_NAME --workspace-name calmvault-logs-$SUFFIX --query customerId -o tsv) \
   --analytics-query "StorageBlobLogs | take 5"
 ```
 

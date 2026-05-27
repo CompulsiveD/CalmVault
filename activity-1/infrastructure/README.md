@@ -10,55 +10,34 @@ Bicep templates to deploy CalmVault's Azure resources.
 
 | Resource | Name Pattern | What it does |
 | --- | --- | --- |
-| **Resource Group** | `rg-calmvault-<suffix>` | A logical container that holds all your Azure resources together |
 | **Storage Account** | `calmvault<suffix>` | Stores your uploaded files as blobs (binary large objects) |
 | **Cosmos DB** | `calmvault-cosmos-<suffix>` | A NoSQL database that stores file metadata (name, tags, upload date) |
 
-> **What's a suffix?** It's a 4-character code (e.g., `a1b2`) automatically generated from your subscription ID. This ensures resource names are globally unique without you having to think of names.
+> **What's a suffix?** It's your user identifier (e.g., `user1`) derived from your lab login. This ensures resource names are unique across lab participants. Your resource group (`rg-calmvault-<suffix>-usc`) is pre-created.
 
 ## Deploy
 
-From the repository root:
+From the repository root (after setting up your environment variables — see `DEPLOYMENT_GUIDE.md` Prerequisites):
 
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-1/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-1/infrastructure/main.bicep \
+  --name activity1-main
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-1/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-1/infrastructure/main.bicep `
+  --name activity1-main
 ```
 
 > **Tip:** This takes 2–5 minutes. When it finishes, you'll see a JSON output with the deployment results.
-
-The deployment outputs a `suffix` value. Save it — all resource names use this suffix and it's required for subsequent activities.
-
-To specify a custom suffix or region (optional — most people should skip this):
-
-**Bash:**
-
-```bash
-az deployment sub create \
-  --location westus2 \
-  --template-file activity-1/infrastructure/main.bicep \
-  --parameters location=westus2 suffix=ab12
-```
-
-**PowerShell:**
-
-```powershell
-az deployment sub create `
-  --location westus2 `
-  --template-file activity-1/infrastructure/main.bicep `
-  --parameters location=westus2 suffix=ab12
-```
 
 ## After Deployment
 

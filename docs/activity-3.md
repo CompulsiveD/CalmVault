@@ -26,17 +26,19 @@ This deploys the Log Analytics workspace, Container Apps Environment, and the ba
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-3/infrastructure/backend.main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-3/infrastructure/backend.main.bicep \
+  --name activity3-backend
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-3/infrastructure/backend.main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-3/infrastructure/backend.main.bicep `
+  --name activity3-backend
 ```
 
 > **Tip:** This activity takes 3–5 minutes because it creates the Container Apps Environment and wires up secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
@@ -48,7 +50,7 @@ Save the backend URL — you'll need it to configure the frontend.
 **Bash:**
 
 ```bash
-BACKEND_URL=$(az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv)
+BACKEND_URL=$(az deployment group show --resource-group $RG_NAME --name activity3-backend --query properties.outputs.backendUrl.value -o tsv)
 
 echo "BACKEND_URL: $BACKEND_URL"
 ```
@@ -56,7 +58,7 @@ echo "BACKEND_URL: $BACKEND_URL"
 **PowerShell:**
 
 ```powershell
-$BACKEND_URL = az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv
+$BACKEND_URL = az deployment group show --resource-group $RG_NAME --name activity3-backend --query properties.outputs.backendUrl.value -o tsv
 
 Write-Output "BACKEND_URL: $BACKEND_URL"
 ```
@@ -100,17 +102,19 @@ Now deploy the frontend Container App with the updated image:
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-3/infrastructure/frontend.main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-3/infrastructure/frontend.main.bicep \
+  --name activity3-frontend
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-3/infrastructure/frontend.main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-3/infrastructure/frontend.main.bicep `
+  --name activity3-frontend
 ```
 
 Save the frontend URL:
@@ -118,7 +122,7 @@ Save the frontend URL:
 **Bash:**
 
 ```bash
-FRONTEND_URL=$(az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv)
+FRONTEND_URL=$(az deployment group show --resource-group $RG_NAME --name activity3-frontend --query properties.outputs.frontendUrl.value -o tsv)
 
 echo "FRONTEND_URL: $FRONTEND_URL"
 ```
@@ -126,7 +130,7 @@ echo "FRONTEND_URL: $FRONTEND_URL"
 **PowerShell:**
 
 ```powershell
-$FRONTEND_URL = az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv
+$FRONTEND_URL = az deployment group show --resource-group $RG_NAME --name activity3-frontend --query properties.outputs.frontendUrl.value -o tsv
 
 Write-Output "FRONTEND_URL: $FRONTEND_URL"
 ```

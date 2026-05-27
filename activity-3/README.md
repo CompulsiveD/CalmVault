@@ -29,17 +29,19 @@ From the repository root:
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-3/infrastructure/backend.main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-3/infrastructure/backend.main.bicep \
+  --name activity3-backend
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-3/infrastructure/backend.main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-3/infrastructure/backend.main.bicep `
+  --name activity3-backend
 ```
 
 > **Tip:** This creates the Log Analytics workspace, Container Apps Environment, and backend Container App. Takes 3–5 minutes.
@@ -53,9 +55,9 @@ The frontend needs to know where the backend lives. Rebuild the frontend image w
 **Bash:**
 
 ```bash
-# Use the SUFFIX saved from Activity 1
+# Use the SUFFIX saved from Prerequisites
 ACR_NAME=calmvaultacr${SUFFIX}
-BACKEND_URL=$(az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv)
+BACKEND_URL=$(az deployment group show --resource-group $RG_NAME --name activity3-backend --query properties.outputs.backendUrl.value -o tsv)
 
 az acr build \
   --registry $ACR_NAME \
@@ -68,9 +70,9 @@ az acr build \
 **PowerShell:**
 
 ```powershell
-# Use the $SUFFIX saved from Activity 1
+# Use the $SUFFIX saved from Prerequisites
 $ACR_NAME = "calmvaultacr$SUFFIX"
-$BACKEND_URL = az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv
+$BACKEND_URL = az deployment group show --resource-group $RG_NAME --name activity3-backend --query properties.outputs.backendUrl.value -o tsv
 
 az acr build `
   --registry $ACR_NAME `
@@ -85,17 +87,19 @@ az acr build `
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-3/infrastructure/frontend.main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-3/infrastructure/frontend.main.bicep \
+  --name activity3-frontend
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-3/infrastructure/frontend.main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-3/infrastructure/frontend.main.bicep `
+  --name activity3-frontend
 ```
 
 ### 3.4 Verify
@@ -103,7 +107,7 @@ az deployment sub create `
 **Bash:**
 
 ```bash
-FRONTEND_URL=$(az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv)
+FRONTEND_URL=$(az deployment group show --resource-group $RG_NAME --name activity3-frontend --query properties.outputs.frontendUrl.value -o tsv)
 
 curl $BACKEND_URL/api/health
 # Expected: {"status":"ok"}
@@ -114,7 +118,7 @@ echo $FRONTEND_URL
 **PowerShell:**
 
 ```powershell
-$FRONTEND_URL = az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv
+$FRONTEND_URL = az deployment group show --resource-group $RG_NAME --name activity3-frontend --query properties.outputs.frontendUrl.value -o tsv
 
 Invoke-RestMethod "$BACKEND_URL/api/health"
 # Expected: @{status=ok}

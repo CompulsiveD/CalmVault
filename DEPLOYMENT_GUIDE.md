@@ -8,9 +8,9 @@ A hands-on guide to deploying CalmVault from scratch. This lab is designed for d
 
 - [Node.js](https://nodejs.org/) 20+ — the JavaScript runtime for our backend and frontend build tools
 - [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli) — a command-line tool for managing Azure resources
-- An active Azure subscription — [create a free account](https://azure.microsoft.com/free/) if you don't have one
+- A lab account provided by your instructor (format: `CalmvaultLab.userX@estdcorp.onmicrosoft.com`)
 
-**Before starting**, make sure you're logged into Azure:
+**Before starting**, log into Azure with your lab account:
 
 **Bash / PowerShell:**
 
@@ -18,11 +18,49 @@ A hands-on guide to deploying CalmVault from scratch. This lab is designed for d
 az login
 ```
 
-This opens a browser window for authentication. Once logged in, verify your subscription:
+This opens a browser window for authentication. Use your assigned lab credentials.
+
+### Set Up Your Lab Environment Variables
+
+Each lab user has a pre-created resource group. The commands below automatically detect your identity and set the variables used throughout all activities.
+
+**Bash:**
 
 ```bash
-az account show --query name -o tsv
+UPN=$(az account show --query user.name -o tsv | tr '[:upper:]' '[:lower:]')
+if [[ "$UPN" =~ ^calmvaultlab\.([a-z0-9]+)@estdcorp\.onmicrosoft\.com$ ]]; then
+  USER_ID="${BASH_REMATCH[1]}"
+else
+  echo "ERROR: Unexpected signed-in user: $UPN" && exit 1
+fi
+
+SUFFIX="$USER_ID"
+RG_NAME="rg-calmvault-${USER_ID}-usc"
+
+echo "USER_ID: $USER_ID"
+echo "SUFFIX:  $SUFFIX"
+echo "RG_NAME: $RG_NAME"
 ```
+
+**PowerShell:**
+
+```powershell
+$UPN = (az account show --query user.name -o tsv).ToLower()
+if ($UPN -match '^calmvaultlab\.([a-z0-9]+)@estdcorp\.onmicrosoft\.com$') {
+  $USER_ID = $Matches[1]
+} else {
+  Write-Error "Unexpected signed-in user: $UPN"; return
+}
+
+$SUFFIX = $USER_ID
+$RG_NAME = "rg-calmvault-$USER_ID-usc"
+
+Write-Output "USER_ID: $USER_ID"
+Write-Output "SUFFIX:  $SUFFIX"
+Write-Output "RG_NAME: $RG_NAME"
+```
+
+> **Tip:** Your `SUFFIX` (e.g., `user1`) is derived from your login and used in all resource names. Your resource group (`rg-calmvault-user1-usc`) is pre-created and ready for deployment. If you close your terminal, re-run these commands to restore your variables.
 
 ---
 
@@ -44,20 +82,22 @@ This command tells Azure to create all the resources defined in our Bicep templa
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-1/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-1/infrastructure/main.bicep \
+  --name activity1-main
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-1/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-1/infrastructure/main.bicep `
+  --name activity1-main
 ```
 
-> **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. If you get an error about the location, make sure you typed `centralus` (no space).
+> **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. The resource group and location are pre-configured — you don't need to specify a region.
 
 ### 1.2 Save Deployment Outputs
 
@@ -66,9 +106,8 @@ The deployment created resources with auto-generated names. Let's save those nam
 **Bash:**
 
 ```bash
-SUFFIX=$(az deployment sub show --name main --query properties.outputs.suffix.value -o tsv)
-COSMOS_ENDPOINT=$(az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv)
-STORAGE_ACCOUNT=$(az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv)
+COSMOS_ENDPOINT=$(az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.cosmosEndpoint.value -o tsv)
+STORAGE_ACCOUNT=$(az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.storageAccountName.value -o tsv)
 
 echo "SUFFIX:          $SUFFIX"
 echo "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
@@ -78,16 +117,15 @@ echo "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 **PowerShell:**
 
 ```powershell
-$SUFFIX = az deployment sub show --name main --query properties.outputs.suffix.value -o tsv
-$COSMOS_ENDPOINT = az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv
-$STORAGE_ACCOUNT = az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv
+$COSMOS_ENDPOINT = az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.cosmosEndpoint.value -o tsv
+$STORAGE_ACCOUNT = az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.storageAccountName.value -o tsv
 
 Write-Output "SUFFIX:          $SUFFIX"
 Write-Output "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
 Write-Output "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 ```
 
-> **Tip:** Write down the `SUFFIX` value (e.g., `a1b2`). It's a 4-character code unique to your subscription and used in all resource names throughout this lab. If you close your terminal, you can always re-run these commands to get the values again.
+> **Tip:** Your `SUFFIX` value (e.g., `user1`) is used in all resource names throughout this lab. If you close your terminal, re-run the prerequisites block and these commands to get the values again.
 
 ### 1.3 Retrieve Secrets & Generate .env File
 
@@ -96,15 +134,15 @@ Some sensitive values (connection strings, keys) are intentionally excluded from
 **Bash:**
 
 ```bash
-# Retrieve secrets using variables from Activity 1.2
+# Retrieve secrets using variables from earlier steps
 STORAGE_CONN=$(az storage account show-connection-string \
   --name $STORAGE_ACCOUNT \
-  --resource-group rg-calmvault-${SUFFIX} \
+  --resource-group $RG_NAME \
   --query connectionString -o tsv)
 
 COSMOS_KEY=$(az cosmosdb keys list \
   --name calmvault-cosmos-${SUFFIX} \
-  --resource-group rg-calmvault-${SUFFIX} \
+  --resource-group $RG_NAME \
   --query primaryMasterKey -o tsv)
 
 # Print the complete .env file — copy everything between the lines
@@ -121,15 +159,15 @@ echo "──────────── end of .env content ─────�
 **PowerShell:**
 
 ```powershell
-# Retrieve secrets using variables from Activity 1.2
+# Retrieve secrets using variables from earlier steps
 $STORAGE_CONN = az storage account show-connection-string `
   --name $STORAGE_ACCOUNT `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --query connectionString -o tsv
 
 $COSMOS_KEY = az cosmosdb keys list `
   --name "calmvault-cosmos-$SUFFIX" `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --query primaryMasterKey -o tsv
 
 # Print the complete .env file — copy everything between the lines
@@ -248,17 +286,19 @@ This deploys the same resources as Activity 1, plus a Container Registry:
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-2/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-2/infrastructure/main.bicep \
+  --name activity2-main
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-2/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-2/infrastructure/main.bicep `
+  --name activity2-main
 ```
 
 ### 2.2 Build the Container Images Remotely
@@ -347,17 +387,19 @@ This deploys the Log Analytics workspace, Container Apps Environment, and the ba
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-3/infrastructure/backend.main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-3/infrastructure/backend.main.bicep \
+  --name activity3-backend
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-3/infrastructure/backend.main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-3/infrastructure/backend.main.bicep `
+  --name activity3-backend
 ```
 
 > **Tip:** This activity takes 3–5 minutes because it creates the Container Apps Environment and wires up secrets (storage connection string, Cosmos DB key) so the backend container can access Azure services.
@@ -369,7 +411,7 @@ Save the backend URL — you'll need it to configure the frontend.
 **Bash:**
 
 ```bash
-BACKEND_URL=$(az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv)
+BACKEND_URL=$(az deployment group show --resource-group $RG_NAME --name activity3-backend --query properties.outputs.backendUrl.value -o tsv)
 
 echo "BACKEND_URL: $BACKEND_URL"
 ```
@@ -377,7 +419,7 @@ echo "BACKEND_URL: $BACKEND_URL"
 **PowerShell:**
 
 ```powershell
-$BACKEND_URL = az deployment sub show --name backend.main --query properties.outputs.backendUrl.value -o tsv
+$BACKEND_URL = az deployment group show --resource-group $RG_NAME --name activity3-backend --query properties.outputs.backendUrl.value -o tsv
 
 Write-Output "BACKEND_URL: $BACKEND_URL"
 ```
@@ -421,17 +463,19 @@ Now deploy the frontend Container App with the updated image:
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-3/infrastructure/frontend.main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-3/infrastructure/frontend.main.bicep \
+  --name activity3-frontend
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-3/infrastructure/frontend.main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-3/infrastructure/frontend.main.bicep `
+  --name activity3-frontend
 ```
 
 Save the frontend URL:
@@ -439,7 +483,7 @@ Save the frontend URL:
 **Bash:**
 
 ```bash
-FRONTEND_URL=$(az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv)
+FRONTEND_URL=$(az deployment group show --resource-group $RG_NAME --name activity3-frontend --query properties.outputs.frontendUrl.value -o tsv)
 
 echo "FRONTEND_URL: $FRONTEND_URL"
 ```
@@ -447,7 +491,7 @@ echo "FRONTEND_URL: $FRONTEND_URL"
 **PowerShell:**
 
 ```powershell
-$FRONTEND_URL = az deployment sub show --name frontend.main --query properties.outputs.frontendUrl.value -o tsv
+$FRONTEND_URL = az deployment group show --resource-group $RG_NAME --name activity3-frontend --query properties.outputs.frontendUrl.value -o tsv
 
 Write-Output "FRONTEND_URL: $FRONTEND_URL"
 ```
@@ -484,24 +528,6 @@ Congratulations — CalmVault is now running in the cloud! 🚀
 
 Now that your app is running, let's add visibility into what's happening. You'll configure **diagnostic settings** so that Azure resources send their logs and metrics to the Log Analytics workspace created in Activity 3.
 
-### Prerequisites
-
-Register the `Microsoft.App` resource provider (required for updating Container Apps later in this activity):
-
-**Bash:**
-
-```bash
-az provider register -n Microsoft.App --wait
-```
-
-**PowerShell:**
-
-```powershell
-az provider register -n Microsoft.App --wait
-```
-
-> **Note:** This may take a minute. It only needs to be done once per subscription.
-
 ### What you'll configure
 
 | Resource | What gets logged |
@@ -515,17 +541,19 @@ az provider register -n Microsoft.App --wait
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-4/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-4/infrastructure/main.bicep \
+  --name activity4-monitoring
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-4/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-4/infrastructure/main.bicep `
+  --name activity4-monitoring
 ```
 
 > **Tip:** This takes about 1–2 minutes. It wires existing resources to send logs to the Log Analytics workspace and creates a monitoring dashboard.
@@ -534,7 +562,7 @@ az deployment sub create `
 
 Open the Azure Portal and check that everything is configured:
 
-1. Navigate to your resource group (`rg-calmvault-<suffix>`)
+1. Navigate to your resource group (`rg-calmvault-<user_id>-usc`)
 2. Click on the **Storage Account** → **Diagnostic settings** (under Monitoring)
 3. Confirm a setting named `calmvault<suffix>-blob-diag` exists and targets the Log Analytics workspace
 4. Repeat for **Cosmos DB** and **Container Registry**
@@ -548,7 +576,7 @@ Upload and download a few files to generate log data, then query:
 
 ```bash
 WORKSPACE_ID=$(az monitor log-analytics workspace show \
-  --resource-group rg-calmvault-$SUFFIX \
+  --resource-group $RG_NAME \
   --workspace-name calmvault-logs-$SUFFIX \
   --query customerId -o tsv)
 
@@ -561,7 +589,7 @@ az monitor log-analytics query \
 
 ```powershell
 $WORKSPACE_ID = az monitor log-analytics workspace show `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --workspace-name "calmvault-logs-$SUFFIX" `
   --query customerId -o tsv
 
@@ -580,7 +608,7 @@ Application Insights provides automatic request/dependency tracking for the Expr
 
 ```bash
 # Get the App Insights connection string from the deployment outputs
-APPINSIGHTS_CONN=$(az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv)
+APPINSIGHTS_CONN=$(az deployment group show --resource-group $RG_NAME --name activity4-monitoring --query properties.outputs.appInsightsConnectionString.value -o tsv)
 
 echo "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
@@ -588,7 +616,7 @@ echo "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 **PowerShell:**
 
 ```powershell
-$APPINSIGHTS_CONN = az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv
+$APPINSIGHTS_CONN = az deployment group show --resource-group $RG_NAME --name activity4-monitoring --query properties.outputs.appInsightsConnectionString.value -o tsv
 
 Write-Output "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
@@ -606,7 +634,7 @@ Then redeploy the backend container with the new environment variable:
 ```bash
 az containerapp update \
   --name calmvault-backend-$SUFFIX \
-  --resource-group rg-calmvault-$SUFFIX \
+  --resource-group $RG_NAME \
   --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
 
@@ -615,7 +643,7 @@ az containerapp update \
 ```powershell
 az containerapp update `
   --name "calmvault-backend-$SUFFIX" `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
 
@@ -636,23 +664,7 @@ This optional activity adds an AI-powered service that automatically tags upload
 
 > **Prerequisites:** Activities 1–3 must be deployed. Azure OpenAI access must be available on your subscription.
 
-### 5.1 Register Resource Providers
-
-**Bash:**
-
-```bash
-az provider register -n Microsoft.EventGrid --wait
-az provider register -n Microsoft.CognitiveServices --wait
-```
-
-**PowerShell:**
-
-```powershell
-az provider register -n Microsoft.EventGrid --wait
-az provider register -n Microsoft.CognitiveServices --wait
-```
-
-### 5.2 Build and Push the Tagger Image
+### 5.1 Build and Push the Tagger Image
 
 **Bash:**
 
@@ -672,27 +684,29 @@ az acr build `
   --file activity-5/tagger/Dockerfile .
 ```
 
-### 5.3 Deploy Infrastructure
+### 5.2 Deploy Infrastructure
 
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-5/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-5/infrastructure/main.bicep \
+  --name activity5-ai-tagger
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-5/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-5/infrastructure/main.bicep `
+  --name activity5-ai-tagger
 ```
 
 > **Tip:** This deploys Azure OpenAI with a GPT-4o model, an Event Grid system topic, a Storage Queue, and the tagger Container App. It may take 2–3 minutes.
 
-### 5.4 Verify
+### 5.3 Verify
 
 1. Navigate to your resource group in the Azure Portal
 2. Confirm the **Azure OpenAI** resource (`calmvault-openai-<suffix>`) exists with a `gpt-4o` deployment
@@ -700,7 +714,7 @@ az deployment sub create `
 4. Open **Event Grid System Topics** — confirm `calmvault-storage-events-<suffix>` has a subscription
 5. Check **Container App Jobs** — `calmvault-tagger-<suffix>` should exist (no active executions when idle)
 
-### 5.5 Test Auto-Tagging
+### 5.4 Test Auto-Tagging
 
 1. Upload an image or text file through the CalmVault frontend
 2. Wait 30–60 seconds for the tagger to process the event
@@ -712,38 +726,46 @@ az deployment sub create `
 
 ## Activity 6 — Cleanup
 
-When you're finished with the lab, delete all Azure resources to avoid ongoing charges.
+When you're finished with the lab, delete all Azure resources within your resource group to leave it clean for future use.
 
 > ⚠️ **This is irreversible.** All uploaded files, database records, container images, and telemetry data will be permanently deleted. Download anything you want to keep before proceeding.
 
-### 6.1 Delete the Resource Group
+### 6.1 Delete All Resources in Your Resource Group
 
-This single command removes every Azure resource created across Activities 1–5:
+This command deploys an empty template in "Complete" mode, which tells Azure to remove any resources not in the template (i.e., everything):
 
 **Bash:**
 
 ```bash
-az group delete --name rg-calmvault-$SUFFIX --yes --no-wait
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-6/empty.bicep \
+  --mode Complete \
+  --name activity6-cleanup
 ```
 
 **PowerShell:**
 
 ```powershell
-az group delete --name "rg-calmvault-$SUFFIX" --yes --no-wait
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-6/empty.bicep `
+  --mode Complete `
+  --name activity6-cleanup
 ```
 
-> **What just happened?** The `--no-wait` flag returns immediately while Azure deletes resources in the background. Full deletion typically takes 2–5 minutes.
+> **What just happened?** A "Complete" mode deployment ensures the resource group matches the template exactly. Since `empty.bicep` defines no resources, Azure removes everything inside the group. The resource group itself is preserved. This may take 2–5 minutes.
 
 ### 6.2 Purge Soft-Deleted Azure OpenAI (Optional)
 
-If you completed Activity 5, the Azure OpenAI account enters a 48-hour soft-delete period after resource group deletion. Purge it immediately if you plan to re-run the lab or need to free up quota:
+If you completed Activity 5, the Azure OpenAI account enters a 48-hour soft-delete period after deletion. Purge it immediately if you plan to re-run the lab or need to free up quota:
 
 **Bash:**
 
 ```bash
 az cognitiveservices account purge \
   --name calmvault-openai-$SUFFIX \
-  --resource-group rg-calmvault-$SUFFIX \
+  --resource-group $RG_NAME \
   --location centralus
 ```
 
@@ -752,26 +774,26 @@ az cognitiveservices account purge \
 ```powershell
 az cognitiveservices account purge `
   --name "calmvault-openai-$SUFFIX" `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --location centralus
 ```
 
-> **Tip:** If you get an error that the resource group doesn't exist (because it was already deleted), that's expected. The purge command uses the original resource group name as a reference but doesn't require it to still exist.
-
 ### 6.3 Verify Cleanup
 
-After a few minutes, confirm the resource group is gone:
+Confirm all resources have been removed from your resource group:
 
 **Bash:**
 
 ```bash
-az group show --name rg-calmvault-$SUFFIX 2>&1 || echo "Resource group deleted successfully"
+az resource list --resource-group $RG_NAME --output table
+# Expected: empty list (no resources)
 ```
 
 **PowerShell:**
 
 ```powershell
-az group show --name "rg-calmvault-$SUFFIX" 2>&1; if ($LASTEXITCODE -ne 0) { Write-Output "Resource group deleted successfully" }
+az resource list --resource-group $RG_NAME --output table
+# Expected: empty list (no resources)
 ```
 
 ---

@@ -33,8 +33,8 @@ Each activity builds incrementally on the previous one:
 ## Quick Start
 
 ```bash
-# Deploy infrastructure (creates Azure resources)
-az deployment sub create --location centralus --template-file activity-1/infrastructure/main.bicep
+# Deploy infrastructure (into your pre-created resource group)
+az deployment group create --resource-group $RG_NAME --template-file activity-1/infrastructure/main.bicep --name activity1-main
 
 # Backend (in one terminal)
 cd activity-1/backend && cp .env.example .env  # fill in credentials from Azure

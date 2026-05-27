@@ -27,17 +27,19 @@ From the repository root:
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-2/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-2/infrastructure/main.bicep \
+  --name activity2-main
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-2/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-2/infrastructure/main.bicep `
+  --name activity2-main
 ```
 
 > **Tip:** This deploys all Activity 1 resources plus the new Container Registry. Existing resources won't be recreated — Bicep is smart enough to skip unchanged resources.

@@ -22,20 +22,22 @@ This command tells Azure to create all the resources defined in our Bicep templa
 **Bash:**
 
 ```bash
-az deployment sub create \
-  --location centralus \
-  --template-file activity-1/infrastructure/main.bicep
+az deployment group create \
+  --resource-group $RG_NAME \
+  --template-file activity-1/infrastructure/main.bicep \
+  --name activity1-main
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment sub create `
-  --location centralus `
-  --template-file activity-1/infrastructure/main.bicep
+az deployment group create `
+  --resource-group $RG_NAME `
+  --template-file activity-1/infrastructure/main.bicep `
+  --name activity1-main
 ```
 
-> **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. If you get an error about the location, make sure you typed `centralus` (no space).
+> **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. If Azure reports that the resource group can't be found, make sure your `$RG_NAME` variable is still set in the current terminal.
 
 ## 1.2 Save Deployment Outputs
 
@@ -44,11 +46,9 @@ The deployment created resources with auto-generated names. Let's save those nam
 **Bash:**
 
 ```bash
-SUFFIX=$(az deployment sub show --name main --query properties.outputs.suffix.value -o tsv)
-COSMOS_ENDPOINT=$(az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv)
-STORAGE_ACCOUNT=$(az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv)
+COSMOS_ENDPOINT=$(az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.cosmosEndpoint.value -o tsv)
+STORAGE_ACCOUNT=$(az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.storageAccountName.value -o tsv)
 
-echo "SUFFIX:          $SUFFIX"
 echo "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
 echo "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 ```
@@ -56,16 +56,14 @@ echo "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 **PowerShell:**
 
 ```powershell
-$SUFFIX = az deployment sub show --name main --query properties.outputs.suffix.value -o tsv
-$COSMOS_ENDPOINT = az deployment sub show --name main --query properties.outputs.cosmosEndpoint.value -o tsv
-$STORAGE_ACCOUNT = az deployment sub show --name main --query properties.outputs.storageAccountName.value -o tsv
+$COSMOS_ENDPOINT = az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.cosmosEndpoint.value -o tsv
+$STORAGE_ACCOUNT = az deployment group show --resource-group $RG_NAME --name activity1-main --query properties.outputs.storageAccountName.value -o tsv
 
-Write-Output "SUFFIX:          $SUFFIX"
 Write-Output "COSMOS_ENDPOINT: $COSMOS_ENDPOINT"
 Write-Output "STORAGE_ACCOUNT: $STORAGE_ACCOUNT"
 ```
 
-> **Tip:** Write down the `SUFFIX` value (e.g., `a1b2`). It's a 4-character code unique to your subscription and used in all resource names throughout this lab. If you close your terminal, you can always re-run these commands to get the values again.
+> **Tip:** Your `SUFFIX` and `RG_NAME` variables were set during prerequisites. If you open a new terminal, re-run those prerequisite commands first, then use this section to retrieve the deployment outputs again.
 
 ## 1.3 Retrieve Secrets & Generate .env File
 
@@ -77,12 +75,12 @@ Some sensitive values (connection strings, keys) are intentionally excluded from
 # Retrieve secrets using variables from Activity 1.2
 STORAGE_CONN=$(az storage account show-connection-string \
   --name $STORAGE_ACCOUNT \
-  --resource-group rg-calmvault-${SUFFIX} \
+  --resource-group $RG_NAME \
   --query connectionString -o tsv)
 
 COSMOS_KEY=$(az cosmosdb keys list \
   --name calmvault-cosmos-${SUFFIX} \
-  --resource-group rg-calmvault-${SUFFIX} \
+  --resource-group $RG_NAME \
   --query primaryMasterKey -o tsv)
 
 # Print the complete .env file — copy everything between the lines
@@ -102,12 +100,12 @@ echo "──────────── end of .env content ─────�
 # Retrieve secrets using variables from Activity 1.2
 $STORAGE_CONN = az storage account show-connection-string `
   --name $STORAGE_ACCOUNT `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --query connectionString -o tsv
 
 $COSMOS_KEY = az cosmosdb keys list `
   --name "calmvault-cosmos-$SUFFIX" `
-  --resource-group "rg-calmvault-$SUFFIX" `
+  --resource-group $RG_NAME `
   --query primaryMasterKey -o tsv
 
 # Print the complete .env file — copy everything between the lines
