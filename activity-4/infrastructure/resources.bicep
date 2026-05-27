@@ -51,33 +51,33 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 // ── Diagnostic Settings: Storage Account (Blob) ────────────
-// resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-//   name: '${storageAccountName}-blob-diag'
-//   scope: storageBlob
-//   properties: {
-//     workspaceId: logAnalytics.id
-//     logs: [
-//       {
-//         category: 'StorageRead'
-//         enabled: true
-//       }
-//       {
-//         category: 'StorageWrite'
-//         enabled: true
-//       }
-//       {
-//         category: 'StorageDelete'
-//         enabled: true
-//       }
-//     ]
-//     metrics: [
-//       {
-//         category: 'Transaction'
-//         enabled: true
-//       }
-//     ]
-//   }
-// }
+resource storageDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${storageAccountName}-blob-diag'
+  scope: storageBlob
+  properties: {
+    workspaceId: logAnalytics.id
+    logs: [
+      {
+        category: 'StorageRead'
+        enabled: true
+      }
+      {
+        category: 'StorageWrite'
+        enabled: true
+      }
+      {
+        category: 'StorageDelete'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'Transaction'
+        enabled: true
+      }
+    ]
+  }
+}
 
 // ── Diagnostic Settings: Cosmos DB ─────────────────────────
 resource cosmosDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
