@@ -1,6 +1,7 @@
 ---
-layout: page
+layout: default
 title: "Activity 5 — AI Auto-Tagging (Optional)"
+nav_order: 6
 ---
 
 # Activity 5 — AI Auto-Tagging (Optional)

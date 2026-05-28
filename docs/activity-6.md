@@ -1,6 +1,7 @@
 ---
-layout: page
+layout: default
 title: "Activity 6 — Cleanup"
+nav_order: 7
 ---
 
 # Activity 6 — Cleanup

@@ -1,6 +1,7 @@
 ---
-layout: page
+layout: default
 title: "Activity 1 — Deploy Infrastructure & Run Locally"
+nav_order: 2
 ---
 
 # Activity 1 — Deploy Infrastructure & Run Locally

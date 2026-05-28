@@ -1,6 +1,7 @@
 ---
-layout: page
-title: CalmVault Deployment Lab
+layout: default
+title: Home
+nav_order: 1
 ---
 
 # CalmVault Deployment Lab
