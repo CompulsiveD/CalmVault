@@ -108,4 +108,4 @@ az acr repository show-tags --name $ACR_NAME --repository calmvault-backend --ou
 
 ---
 
-👉 **Next:** [Activity 3 — Deploy to Azure Container Apps]({% link activity-3.md %})
+👉 **Next:** [Activity 3 — Deploy to Azure Container Apps]({{ 'activity-3.html' | relative_url }})

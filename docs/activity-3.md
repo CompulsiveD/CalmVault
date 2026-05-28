@@ -167,4 +167,4 @@ Congratulations — CalmVault is now running in the cloud! 🚀
 
 ---
 
-👉 **Next:** [Activity 4 — Monitoring & Observability]({% link activity-4.md %})
+👉 **Next:** [Activity 4 — Monitoring & Observability]({{ 'activity-4.html' | relative_url }})

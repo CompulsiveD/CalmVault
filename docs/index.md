@@ -16,12 +16,12 @@ A hands-on guide to deploying a full-stack web application on Azure. This lab is
 
 | Activity | What you'll do | What you'll learn |
 | --- | --- | --- |
-| [Activity 1]({% link activity-1.md %}) | Deploy Azure resources and run the app locally | Bicep (infrastructure-as-code), Azure Storage, Cosmos DB |
-| [Activity 2]({% link activity-2.md %}) | Build container images in the cloud | Docker concepts, Azure Container Registry, `az acr build` |
-| [Activity 3]({% link activity-3.md %}) | Deploy containers to Azure Container Apps | Managed container hosting, auto-scaling, secrets management |
-| [Activity 4]({% link activity-4.md %}) | Add monitoring and observability | Diagnostic settings, Log Analytics, KQL queries |
-| [Activity 5]({% link activity-5.md %}) | AI auto-tagging with GPT-4o (optional) | Azure OpenAI, Event Grid, Container App Jobs |
-| [Activity 6]({% link activity-6.md %}) | Clean up all Azure resources | Resource lifecycle management |
+| [Activity 1]({{ 'activity-1.html' | relative_url }}) | Deploy Azure resources and run the app locally | Bicep (infrastructure-as-code), Azure Storage, Cosmos DB |
+| [Activity 2]({{ 'activity-2.html' | relative_url }}) | Build container images in the cloud | Docker concepts, Azure Container Registry, `az acr build` |
+| [Activity 3]({{ 'activity-3.html' | relative_url }}) | Deploy containers to Azure Container Apps | Managed container hosting, auto-scaling, secrets management |
+| [Activity 4]({{ 'activity-4.html' | relative_url }}) | Add monitoring and observability | Diagnostic settings, Log Analytics, KQL queries |
+| [Activity 5]({{ 'activity-5.html' | relative_url }}) | AI auto-tagging with GPT-4o (optional) | Azure OpenAI, Event Grid, Container App Jobs |
+| [Activity 6]({{ 'activity-6.html' | relative_url }}) | Clean up all Azure resources | Resource lifecycle management |
 
 ## Architecture
 
@@ -52,4 +52,4 @@ az account show --query name -o tsv
 
 ---
 
-👉 **Ready?** Start with [Activity 1 — Deploy Infrastructure & Run Locally]({% link activity-1.md %})
+👉 **Ready?** Start with [Activity 1 — Deploy Infrastructure & Run Locally]({{ 'activity-1.html' | relative_url }})

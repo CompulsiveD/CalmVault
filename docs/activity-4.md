@@ -144,4 +144,4 @@ az containerapp update `
 
 ---
 
-👉 **Next:** [Activity 5 — AI Auto-Tagging (Optional)]({% link activity-5.md %})
+👉 **Next:** [Activity 5 — AI Auto-Tagging (Optional)]({{ 'activity-5.html' | relative_url }})

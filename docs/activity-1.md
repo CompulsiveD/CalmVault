@@ -213,4 +213,4 @@ If everything works, congratulations! Your app is running locally and storing fi
 
 ---
 
-👉 **Next:** [Activity 2 — Build Container Images with ACR]({% link activity-2.md %})
+👉 **Next:** [Activity 2 — Build Container Images with ACR]({{ 'activity-2.html' | relative_url }})

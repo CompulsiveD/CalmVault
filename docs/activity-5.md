@@ -76,4 +76,4 @@ az deployment group create `
 
 ---
 
-👉 **Next:** [Activity 6 — Cleanup]({% link activity-6.md %})
+👉 **Next:** [Activity 6 — Cleanup]({{ 'activity-6.html' | relative_url }})
