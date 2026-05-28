@@ -157,6 +157,10 @@ Write-Output $FRONTEND_URL
 
 Open the frontend URL in your browser. Upload a file and confirm it round-trips through the backend to Blob Storage.
 
+![Container Apps in Azure Portal](images/activity-3/container-apps-overview.png)
+
+![CalmVault frontend running in the cloud](images/activity-3/frontend-deployed.png)
+
 > **Tip:** The first request may take 10–20 seconds because Container Apps scales from zero. Subsequent requests will be fast.
 
 Congratulations — CalmVault is now running in the cloud! 🚀

@@ -39,6 +39,10 @@ az deployment group create `
 
 > **Tip:** This may take 2–5 minutes. You'll see a JSON output when it completes. If Azure reports that the resource group can't be found, make sure your `$RG_NAME` variable is still set in the current terminal.
 
+Once deployed, you can see the resources in the Azure Portal:
+
+![Resource group overview showing Storage Account and Cosmos DB](images/activity-1/resource-group-overview.png)
+
 ## 1.2 Save Deployment Outputs
 
 The deployment created resources with auto-generated names. Let's save those names — you'll need them for configuration and all subsequent activities.
@@ -175,6 +179,8 @@ Invoke-RestMethod http://localhost:3001/api/health
 
 > **Tip:** If you get "connection refused", make sure the backend started without errors. Check the terminal where you ran `npm run dev` for error messages — usually a missing `.env` value.
 
+![Backend running successfully with health check](images/activity-1/backend-running.png)
+
 ## 1.6 Start the Frontend
 
 In a **new terminal window** (keep the backend running):
@@ -189,6 +195,8 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser. You should see the CalmVault interface with a drag & drop upload zone.
 
+![CalmVault frontend with upload zone](images/activity-1/frontend-ui.png)
+
 > **Tip:** The frontend talks to the backend at `http://localhost:3001`. Both must be running simultaneously.
 
 ## 1.7 Verify End-to-End
@@ -198,6 +206,8 @@ Open [http://localhost:5173](http://localhost:5173) in your browser. You should 
 3. Confirm the file appears in the gallery
 4. Click the file to preview it
 5. Delete the file and confirm it's removed
+
+![File uploaded and visible in the gallery](images/activity-1/file-uploaded.png)
 
 If everything works, congratulations! Your app is running locally and storing files in Azure. 🎉
 

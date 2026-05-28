@@ -88,6 +88,8 @@ az acr build `
 
 > **Tip:** Each build takes 1–3 minutes. The `.` at the end means "use the current directory as the build context" — this is why you must run this from the repository root.
 
+![ACR build output showing successful image push](images/activity-2/acr-build-output.png)
+
 ## 2.3 Verify
 
 Confirm both images were created:
@@ -101,6 +103,8 @@ az acr repository list --name $ACR_NAME --output table
 az acr repository show-tags --name $ACR_NAME --repository calmvault-backend --output table
 # Expected: latest
 ```
+
+![ACR repositories in Azure Portal](images/activity-2/acr-repositories.png)
 
 ---
 

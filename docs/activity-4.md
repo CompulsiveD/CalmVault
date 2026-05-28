@@ -48,6 +48,10 @@ Open the Azure Portal and check that everything is configured:
 4. Repeat for **Cosmos DB** and **Container Registry**
 5. Find the **Dashboard** resource (`calmvault-dashboard-<suffix>`) and open it — you'll see 4 empty panels that will populate once traffic flows
 
+![Diagnostic settings configured on a resource](images/activity-4/diagnostic-settings.png)
+
+![Azure monitoring dashboard with chart panels](images/activity-4/dashboard.png)
+
 ## 4.3 Generate Traffic & Query Logs
 
 Upload and download a few files to generate log data, then query:
@@ -135,6 +139,8 @@ az containerapp update `
 2. In the Azure Portal, open **Application Insights** (`calmvault-insights-<suffix>`)
 3. Click **Live Metrics** to see requests flowing in real-time
 4. Click **Transaction search** to view individual requests with timing and dependencies
+
+![Application Insights live metrics](images/activity-4/app-insights-live.png)
 
 ---
 

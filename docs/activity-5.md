@@ -60,11 +60,17 @@ az deployment group create `
 4. Open **Event Grid System Topics** — confirm `calmvault-storage-events-<suffix>` has a subscription
 5. Check **Container App Jobs** — `calmvault-tagger-<suffix>` should exist (no active executions when idle)
 
+![Azure OpenAI resource with GPT-4o deployment](images/activity-5/openai-resource.png)
+
+![Event Grid system topic with subscription](images/activity-5/event-grid-topic.png)
+
 ## 5.4 Test Auto-Tagging
 
 1. Upload an image or text file through the CalmVault frontend
 2. Wait 30–60 seconds for the tagger to process the event
 3. Refresh the file in the frontend — you should see `ai:`-prefixed tags (e.g., `ai:landscape`, `ai:document`)
+
+![File showing AI-generated tags](images/activity-5/auto-tagged-file.png)
 
 > **Note:** The tagger scales from 0, so the first event may take longer while the container starts up. Subsequent events are faster.
 

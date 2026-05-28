@@ -71,6 +71,8 @@ az resource list --resource-group $RG_NAME --output table
 # Expected: empty list (no resources)
 ```
 
+![Empty resource group after cleanup](images/activity-6/empty-resource-group.png)
+
 ---
 
 ## Congratulations! 🎉

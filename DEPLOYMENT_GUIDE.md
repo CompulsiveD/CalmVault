@@ -251,6 +251,8 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser. You should see the CalmVault interface with a drag & drop upload zone.
 
+![CalmVault frontend with upload zone](docs/images/activity-1/frontend-ui.png)
+
 > **Tip:** The frontend talks to the backend at `http://localhost:3001`. Both must be running simultaneously.
 
 ### 1.7 Verify End-to-End
@@ -260,6 +262,8 @@ Open [http://localhost:5173](http://localhost:5173) in your browser. You should 
 3. Confirm the file appears in the gallery
 4. Click the file to preview it
 5. Delete the file and confirm it's removed
+
+![File uploaded and visible in the gallery](docs/images/activity-1/file-uploaded.png)
 
 If everything works, congratulations! Your app is running locally and storing files in Azure. 🎉
 
@@ -517,6 +521,8 @@ Write-Output $FRONTEND_URL
 ```
 
 Open the frontend URL in your browser. Upload a file and confirm it round-trips through the backend to Blob Storage.
+
+![CalmVault running in the cloud via Container Apps](docs/images/activity-3/frontend-deployed.png)
 
 > **Tip:** The first request may take 10–20 seconds because Container Apps scales from zero. Subsequent requests will be fast.
 
