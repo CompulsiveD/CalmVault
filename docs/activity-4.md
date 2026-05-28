@@ -1,7 +1,6 @@
 ---
-layout: default
+layout: page
 title: "Activity 4 — Monitoring & Observability"
-nav_order: 5
 ---
 
 # Activity 4 — Monitoring & Observability

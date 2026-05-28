@@ -1,7 +1,6 @@
 ---
-layout: default
+layout: page
 title: "Activity 3 — Deploy to Azure Container Apps"
-nav_order: 4
 ---
 
 # Activity 3 — Deploy to Azure Container Apps

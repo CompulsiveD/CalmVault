@@ -1,27 +1,18 @@
 title: CalmVault Deployment Lab
 description: A hands-on guide to deploying a full-stack web application on Azure
-remote_theme: just-the-docs/just-the-docs
-
-plugins:
-  - jekyll-remote-theme
+theme: minima
 
 url: ""
 baseurl: ""
 
-color_scheme: light
-
-aux_links:
-  "View on GitHub":
-    - "https://github.com/CompulsiveD/CalmVault"
-
-nav_enabled: true
-
-heading_anchors: true
-
-back_to_top: true
-back_to_top_text: "Back to top"
-
-footer_content: "CalmVault Deployment Lab &mdash; Built with <a href=\"https://just-the-docs.com\">Just the Docs</a>"
+header_pages:
+  - index.md
+  - activity-1.md
+  - activity-2.md
+  - activity-3.md
+  - activity-4.md
+  - activity-5.md
+  - activity-6.md
 
 exclude:
   - activity-1/
@@ -37,3 +28,5 @@ exclude:
   - Dockerfile
   - nginx.conf
   - .env*
+  - Gemfile
+  - Gemfile.lock

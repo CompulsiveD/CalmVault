@@ -1,7 +1,6 @@
 ---
-layout: default
+layout: page
 title: "Activity 2 — Build Container Images with ACR"
-nav_order: 3
 ---
 
 # Activity 2 — Build Container Images with ACR
