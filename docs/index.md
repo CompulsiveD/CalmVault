@@ -50,6 +50,48 @@ This opens a browser window for authentication. Once logged in, verify your subs
 az account show --query name -o tsv
 ```
 
+### Set Up Your Lab Environment Variables
+
+Each lab user has a pre-created resource group. The commands below automatically detect your identity and set the variables used throughout all activities.
+
+**Bash:**
+
+```bash
+UPN=$(az account show --query user.name -o tsv | tr '[:upper:]' '[:lower:]')
+if [[ "$UPN" =~ ^calmvaultlab\.([a-z0-9]+)@estdcorp\.onmicrosoft\.com$ ]]; then
+  USER_ID="${BASH_REMATCH[1]}"
+else
+  echo "ERROR: Unexpected signed-in user: $UPN" && exit 1
+fi
+
+SUFFIX="$USER_ID"
+RG_NAME="rg-calmvault-${USER_ID}-usc"
+
+echo "USER_ID: $USER_ID"
+echo "SUFFIX:  $SUFFIX"
+echo "RG_NAME: $RG_NAME"
+```
+
+**PowerShell:**
+
+```powershell
+$UPN = (az account show --query user.name -o tsv).ToLower()
+if ($UPN -match '^calmvaultlab\.([a-z0-9]+)@estdcorp\.onmicrosoft\.com$') {
+  $USER_ID = $Matches[1]
+} else {
+  Write-Error "Unexpected signed-in user: $UPN"; return
+}
+
+$SUFFIX = $USER_ID
+$RG_NAME = "rg-calmvault-$USER_ID-usc"
+
+Write-Output "USER_ID: $USER_ID"
+Write-Output "SUFFIX:  $SUFFIX"
+Write-Output "RG_NAME: $RG_NAME"
+```
+
+> **Tip:** Your `SUFFIX` (e.g., `user1`) is derived from your login and used in all resource names. Your resource group (`rg-calmvault-user1-usc`) is pre-created and ready for deployment. If you close your terminal, re-run these commands to restore your variables.
+
 ---
 
 👉 **Ready?** Start with [Activity 1 — Deploy Infrastructure & Run Locally]({{ 'activity-1.html' | relative_url }})

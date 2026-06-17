@@ -88,14 +88,16 @@ COSMOS_KEY=$(az cosmosdb keys list \
   --query primaryMasterKey -o tsv)
 
 # Print the complete .env file — copy everything between the lines
-echo "──────────── .env content (copy below) ────────────"
-echo "PORT=3001"
-echo "AZURE_STORAGE_CONNECTION_STRING=$STORAGE_CONN"
-echo "AZURE_STORAGE_CONTAINER_NAME=calmvault-files"
-echo "COSMOS_ENDPOINT=$COSMOS_ENDPOINT"
-echo "COSMOS_KEY=$COSMOS_KEY"
-echo "COSMOS_DATABASE_NAME=calmvault"
-echo "──────────── end of .env content ────────────"
+cat <<EOF
+──────────── .env content (copy below) ────────────
+PORT=3001
+AZURE_STORAGE_CONNECTION_STRING=$STORAGE_CONN
+AZURE_STORAGE_CONTAINER_NAME=calmvault-files
+COSMOS_ENDPOINT=$COSMOS_ENDPOINT
+COSMOS_KEY=$COSMOS_KEY
+COSMOS_DATABASE_NAME=calmvault
+──────────── end of .env content ────────────
+EOF
 ```
 
 **PowerShell:**
