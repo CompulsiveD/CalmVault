@@ -39,3 +39,4 @@ exclude:
   - .env*
   - Gemfile
   - Gemfile.lock
+  - images/README.md
