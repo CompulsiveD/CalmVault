@@ -10,7 +10,23 @@ This optional activity adds an AI-powered service that automatically tags upload
 
 > **Prerequisites:** Activities 1–3 must be deployed. Azure OpenAI access must be available on your subscription.
 
-## 5.1 Build and Push the Tagger Image
+## 5.1 Register Resource Providers
+
+**Bash:**
+
+```bash
+az provider register -n Microsoft.EventGrid --wait
+az provider register -n Microsoft.CognitiveServices --wait
+```
+
+**PowerShell:**
+
+```powershell
+az provider register -n Microsoft.EventGrid --wait
+az provider register -n Microsoft.CognitiveServices --wait
+```
+
+## 5.2 Build and Push the Tagger Image
 
 **Bash:**
 
@@ -30,29 +46,27 @@ az acr build `
   --file activity-5/tagger/Dockerfile .
 ```
 
-## 5.2 Deploy Infrastructure
+## 5.3 Deploy Infrastructure
 
 **Bash:**
 
 ```bash
-az deployment group create \
-  --resource-group $RG_NAME \
-  --template-file activity-5/infrastructure/main.bicep \
-  --name activity5-ai-tagger
+az deployment sub create \
+  --location centralus \
+  --template-file activity-5/infrastructure/main.bicep
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment group create `
-  --resource-group $RG_NAME `
-  --template-file activity-5/infrastructure/main.bicep `
-  --name activity5-ai-tagger
+az deployment sub create `
+  --location centralus `
+  --template-file activity-5/infrastructure/main.bicep
 ```
 
 > **Tip:** This deploys Azure OpenAI with a GPT-4o model, an Event Grid system topic, a Storage Queue, and the tagger Container App Job. It may take 2–3 minutes.
 
-## 5.3 Verify
+## 5.4 Verify
 
 1. Navigate to your resource group in the Azure Portal
 2. Confirm the **Azure OpenAI** resource (`calmvault-openai-<suffix>`) exists with a `gpt-4o` deployment
@@ -64,7 +78,7 @@ az deployment group create `
 
 ![Event Grid system topic with subscription](images/activity-5/event-grid-topic.png)
 
-## 5.4 Test Auto-Tagging
+## 5.5 Test Auto-Tagging
 
 1. Upload an image or text file through the CalmVault frontend
 2. Wait 30–60 seconds for the tagger to process the event

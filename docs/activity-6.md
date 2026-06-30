@@ -10,42 +10,34 @@ When you're finished with the lab, delete all Azure resources to avoid ongoing c
 
 > ⚠️ **This is irreversible.** All uploaded files, database records, container images, and telemetry data will be permanently deleted. Download anything you want to keep before proceeding.
 
-## 6.1 Remove Resources from the Resource Group
+## 6.1 Delete the Resource Group
 
-This deployment runs an empty Bicep template in **Complete** mode, which removes every Azure resource created across Activities 1–5 while keeping the resource group itself:
+This single command removes every Azure resource created across Activities 1–5:
 
 **Bash:**
 
 ```bash
-az deployment group create \
-  --resource-group $RG_NAME \
-  --template-file activity-6/empty.bicep \
-  --mode Complete \
-  --name activity6-cleanup
+az group delete --name rg-calmvault-$SUFFIX --yes --no-wait
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment group create `
-  --resource-group $RG_NAME `
-  --template-file activity-6/empty.bicep `
-  --mode Complete `
-  --name activity6-cleanup
+az group delete --name "rg-calmvault-$SUFFIX" --yes --no-wait
 ```
 
-> **What just happened?** Azure compared the resource group to an empty template and deleted the resources that were no longer declared. This cleanup typically takes a few minutes.
+> **What just happened?** The `--no-wait` flag returns immediately while Azure deletes resources in the background. Full deletion typically takes 2–5 minutes.
 
 ## 6.2 Purge Soft-Deleted Azure OpenAI (Optional)
 
-If you completed Activity 5, the Azure OpenAI account enters a 48-hour soft-delete period after cleanup. Purge it immediately if you plan to re-run the lab or need to free up quota:
+If you completed Activity 5, the Azure OpenAI account enters a 48-hour soft-delete period after resource group deletion. Purge it immediately if you plan to re-run the lab or need to free up quota:
 
 **Bash:**
 
 ```bash
 az cognitiveservices account purge \
   --name calmvault-openai-$SUFFIX \
-  --resource-group $RG_NAME \
+  --resource-group rg-calmvault-$SUFFIX \
   --location centralus
 ```
 
@@ -54,21 +46,26 @@ az cognitiveservices account purge \
 ```powershell
 az cognitiveservices account purge `
   --name "calmvault-openai-$SUFFIX" `
-  --resource-group $RG_NAME `
+  --resource-group "rg-calmvault-$SUFFIX" `
   --location centralus
 ```
 
-> **Tip:** Run the purge command after the cleanup deployment finishes. It uses `$RG_NAME` to reference the original Azure OpenAI resource metadata while the soft-deleted account is being purged.
+> **Tip:** If you get an error that the resource group doesn't exist (because it was already deleted), that's expected. The purge command uses the original resource group name as a reference but doesn't require it to still exist.
 
 ## 6.3 Verify Cleanup
 
-After a few minutes, confirm the resource group is empty:
+After a few minutes, confirm the resource group is gone:
 
-**Bash / PowerShell:**
+**Bash:**
 
 ```bash
-az resource list --resource-group $RG_NAME --output table
-# Expected: empty list (no resources)
+az group show --name rg-calmvault-$SUFFIX 2>&1 || echo "Resource group deleted successfully"
+```
+
+**PowerShell:**
+
+```powershell
+az group show --name "rg-calmvault-$SUFFIX" 2>&1; if ($LASTEXITCODE -ne 0) { Write-Output "Resource group deleted successfully" }
 ```
 
 ![Empty resource group after cleanup](images/activity-6/empty-resource-group.png)

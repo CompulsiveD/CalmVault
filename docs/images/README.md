@@ -26,7 +26,7 @@ images/
 ### Activity 1
 | Filename | Description |
 | --- | --- |
-| `1-1-deployment-output.png` | Terminal showing successful `az deployment group create` output |
+| `1-1-deployment-output.png` | Terminal showing successful `az deployment sub create` output |
 | `resource-group-overview.png` | Azure Portal — resource group with storage + cosmos resources |
 | `storage-account.png` | Azure Portal — storage account overview |
 | `cosmos-db.png` | Azure Portal — Cosmos DB account overview |

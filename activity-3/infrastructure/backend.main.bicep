@@ -1,13 +1,21 @@
+targetScope = 'subscription'
+
 @description('Azure region for all resources')
-param location string = resourceGroup().location
+param location string = 'centralus'
+
+@description('Random suffix for unique resource names (4 characters)')
+param suffix string = substring(uniqueString(subscription().subscriptionId, 'calmvault'), 0, 4)
 
 var projectName = 'calmvault'
-// Derive suffix from pre-created resource group name: rg-calmvault-<suffix>-usc
-var rgNameParts = split(resourceGroup().name, '-')
-var suffix = rgNameParts[2]
+var rgName = 'rg-${projectName}-${suffix}'
+
+resource resourceGroup 'Microsoft.Resources/resourceGroups@2024-11-01' existing = {
+  name: rgName
+}
 
 module resources 'backend.resources.bicep' = {
   name: 'deploy-backend'
+  scope: resourceGroup
   params: {
     location: location
     projectName: projectName
@@ -15,7 +23,7 @@ module resources 'backend.resources.bicep' = {
   }
 }
 
-output resourceGroupName string = resourceGroup().name
+output resourceGroupName string = resourceGroup.name
 output storageAccountName string = resources.outputs.storageAccountName
 output cosmosAccountName string = resources.outputs.cosmosAccountName
 output cosmosEndpoint string = resources.outputs.cosmosEndpoint

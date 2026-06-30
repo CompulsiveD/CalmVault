@@ -25,19 +25,17 @@ This deploys the same resources as Activity 1, plus a Container Registry:
 **Bash:**
 
 ```bash
-az deployment group create \
-  --resource-group $RG_NAME \
-  --template-file activity-2/infrastructure/main.bicep \
-  --name activity2-main
+az deployment sub create \
+  --location centralus \
+  --template-file activity-2/infrastructure/main.bicep
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment group create `
-  --resource-group $RG_NAME `
-  --template-file activity-2/infrastructure/main.bicep `
-  --name activity2-main
+az deployment sub create `
+  --location centralus `
+  --template-file activity-2/infrastructure/main.bicep
 ```
 
 ## 2.2 Build the Container Images Remotely

@@ -75,18 +75,18 @@ These must stay in sync manually. If you add a field to one, add it to the other
 ### Infrastructure (`cd activity-1/infrastructure`)
 
 ```bash
-az deployment group create --resource-group $RG_NAME --template-file activity-1/infrastructure/main.bicep --name activity1-main
+az deployment sub create --location centralus --template-file activity-1/infrastructure/main.bicep
 ```
 
-All resource names follow the pattern `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts, which disallow hyphens). The suffix is the user identifier derived from the lab login (e.g., `user1`). Resource groups are pre-created with the pattern `rg-calmvault-<suffix>-usc`.
+All resource names follow the pattern `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts, which disallow hyphens). The suffix defaults to a 4-character hash derived from the subscription ID.
 
 ### Infrastructure Components
 
-Defined in `main.bicep` (resource-group scope, delegates to `resources.bicep`):
+Defined across `main.bicep` (subscription scope) and `resources.bicep` (resource group scope):
 
 | Resource | Type | Name Pattern | Notes |
 | --- | --- | --- | --- |
-| Resource Group | `Microsoft.Resources/resourceGroups` | `rg-calmvault-<suffix>-usc` | Pre-created by lab admin |
+| Resource Group | `Microsoft.Resources/resourceGroups` | `rg-calmvault-<suffix>` | Default region: `centralus`, tagged `SecurityControl: Ignore` |
 | Storage Account | `Microsoft.Storage/storageAccounts` | `calmvault<suffix>` | Standard LRS, TLS 1.2, no public blob access, shared key access enabled |
 | Blob Container | `storageAccounts/blobServices/containers` | `calmvault-files` | Created inside the storage account |
 | Cosmos DB Account | `Microsoft.DocumentDB/databaseAccounts` | `calmvault-cosmos-<suffix>` | Serverless mode, Session consistency, local auth enabled |
@@ -165,9 +165,9 @@ Frontend uses `VITE_API_BASE_URL` (defaults to `http://localhost:3001`).
 
 ### Conventions
 
-- **Resource naming**: All Azure resources follow `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts). The suffix is the user identifier derived from the lab login (e.g., `user1`). Resource groups are pre-created as `rg-calmvault-<suffix>-usc`.
+- **Resource naming**: All Azure resources follow `calmvault-<resource>-<suffix>` (or `calmvault<suffix>` for storage accounts). The suffix is a 4-char hash from the subscription ID.
 - **Commit messages**: Imperative mood, concise subject line. Include `Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>` trailer when Copilot authored the commit.
-- **Bicep patterns**: Resource-group-scoped `main.bicep` derives the suffix from the resource group name (`split(resourceGroup().name, '-')[2]`) and delegates to `resources.bicep`. Use `existing` keyword for resources created in prior activities.
+- **Bicep patterns**: Subscription-scope `main.bicep` references an existing resource group and delegates to a resource-group-scoped `resources.bicep` module. Use `existing` keyword for resources created in prior activities.
 - **Secrets handling**: Never output secrets in Bicep outputs. Retrieve keys via Azure CLI after deployment. Pass secrets to Container Apps via the `secrets` array with `secretRef` in env vars.
 - **TypeScript style**: Strict mode, ES2022 target, CommonJS modules. Use `tsx` for dev, `tsc` for production builds.
 - **Package management**: Use `npm ci` in Dockerfiles for reproducible builds. Use `npm install` locally.

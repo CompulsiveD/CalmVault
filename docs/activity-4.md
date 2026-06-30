@@ -8,6 +8,24 @@ nav_order: 5
 
 Now that your app is running, let's add visibility into what's happening. You'll configure **diagnostic settings** so that Azure resources send their logs and metrics to the Log Analytics workspace created in Activity 3.
 
+## Prerequisites
+
+Register the `Microsoft.App` resource provider (required for updating Container Apps later in this activity):
+
+**Bash:**
+
+```bash
+az provider register -n Microsoft.App --wait
+```
+
+**PowerShell:**
+
+```powershell
+az provider register -n Microsoft.App --wait
+```
+
+> **Note:** This may take a minute. It only needs to be done once per subscription.
+
 ## What you'll configure
 
 | Resource | What gets logged |
@@ -21,19 +39,17 @@ Now that your app is running, let's add visibility into what's happening. You'll
 **Bash:**
 
 ```bash
-az deployment group create \
-  --resource-group $RG_NAME \
-  --template-file activity-4/infrastructure/main.bicep \
-  --name activity4-monitoring
+az deployment sub create \
+  --location centralus \
+  --template-file activity-4/infrastructure/main.bicep
 ```
 
 **PowerShell:**
 
 ```powershell
-az deployment group create `
-  --resource-group $RG_NAME `
-  --template-file activity-4/infrastructure/main.bicep `
-  --name activity4-monitoring
+az deployment sub create `
+  --location centralus `
+  --template-file activity-4/infrastructure/main.bicep
 ```
 
 > **Tip:** This takes about 1–2 minutes. It wires existing resources to send logs to the Log Analytics workspace and creates a monitoring dashboard.
@@ -42,7 +58,7 @@ az deployment group create `
 
 Open the Azure Portal and check that everything is configured:
 
-1. Navigate to your resource group (`$RG_NAME`)
+1. Navigate to your resource group (`rg-calmvault-<suffix>`)
 2. Click on the **Storage Account** → **Diagnostic settings** (under Monitoring)
 3. Confirm a setting named `calmvault<suffix>-blob-diag` exists and targets the Log Analytics workspace
 4. Repeat for **Cosmos DB** and **Container Registry**
@@ -60,7 +76,7 @@ Upload and download a few files to generate log data, then query:
 
 ```bash
 WORKSPACE_ID=$(az monitor log-analytics workspace show \
-  --resource-group $RG_NAME \
+  --resource-group rg-calmvault-$SUFFIX \
   --workspace-name calmvault-logs-$SUFFIX \
   --query customerId -o tsv)
 
@@ -73,7 +89,7 @@ az monitor log-analytics query \
 
 ```powershell
 $WORKSPACE_ID = az monitor log-analytics workspace show `
-  --resource-group $RG_NAME `
+  --resource-group "rg-calmvault-$SUFFIX" `
   --workspace-name "calmvault-logs-$SUFFIX" `
   --query customerId -o tsv
 
@@ -92,7 +108,7 @@ Application Insights provides automatic request/dependency tracking for the Expr
 
 ```bash
 # Get the App Insights connection string from the deployment outputs
-APPINSIGHTS_CONN=$(az deployment group show --resource-group $RG_NAME --name activity4-monitoring --query properties.outputs.appInsightsConnectionString.value -o tsv)
+APPINSIGHTS_CONN=$(az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv)
 
 echo "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
@@ -100,7 +116,7 @@ echo "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 **PowerShell:**
 
 ```powershell
-$APPINSIGHTS_CONN = az deployment group show --resource-group $RG_NAME --name activity4-monitoring --query properties.outputs.appInsightsConnectionString.value -o tsv
+$APPINSIGHTS_CONN = az deployment sub show --name main --query properties.outputs.appInsightsConnectionString.value -o tsv
 
 Write-Output "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
@@ -118,7 +134,7 @@ Then redeploy the backend container with the new environment variable:
 ```bash
 az containerapp update \
   --name calmvault-backend-$SUFFIX \
-  --resource-group $RG_NAME \
+  --resource-group rg-calmvault-$SUFFIX \
   --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
 
@@ -127,7 +143,7 @@ az containerapp update \
 ```powershell
 az containerapp update `
   --name "calmvault-backend-$SUFFIX" `
-  --resource-group $RG_NAME `
+  --resource-group "rg-calmvault-$SUFFIX" `
   --set-env-vars "APPLICATIONINSIGHTS_CONNECTION_STRING=$APPINSIGHTS_CONN"
 ```
 
